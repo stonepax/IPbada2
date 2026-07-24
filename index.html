@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IP바다 | 대한민국 IP 전문가를 위한 올인원 플랫폼</title>
+<meta name="description" content="판례·심결례 검색부터 특허출원, 심판·소송, IP마켓, 구인구직, 커뮤니티까지. IP바다는 변리사와 기업 IP팀, 스타트업을 위한 지식재산 통합 플랫폼입니다.">
+<style>
+  :root{
+    --navy:#0a2540;
+    --navy-dark:#061a2e;
+    --teal:#0ea5b7;
+    --teal-light:#3fd8c8;
+    --amber:#f5a623;
+    --bg-alt:#f0f6fb;
+    --text:#1c2b3a;
+    --muted:#5b6b7b;
+    --border:#e1eaf1;
+    --radius:14px;
+    --shadow:0 8px 24px rgba(10,37,64,0.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif;
+    color:var(--text);
+    background:#fff;
+    line-height:1.6;
+  }
+  img{max-width:100%;display:block;}
+  a{color:inherit;text-decoration:none;}
+  ul{list-style:none;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px;}
+  .eyebrow{
+    display:inline-block;
+    font-size:13px;
+    font-weight:700;
+    color:var(--teal);
+    background:rgba(14,165,183,0.1);
+    padding:5px 12px;
+    border-radius:999px;
+    margin-bottom:14px;
+    letter-spacing:.3px;
+  }
+  h1,h2,h3{color:var(--navy);}
+  .section-head{max-width:640px;margin:0 auto 40px;text-align:center;}
+  .section-head h2{font-size:clamp(24px,3vw,32px);margin-bottom:10px;}
+  .section-head p{color:var(--muted);font-size:15.5px;}
+
+  /* ===== Header ===== */
+  header{
+    position:sticky;top:0;z-index:100;
+    background:rgba(255,255,255,0.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--border);
+  }
+  .header-inner{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 24px;max-width:1180px;margin:0 auto;
+  }
+  .logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:21px;color:var(--navy);}
+  .logo .dot{color:var(--teal);}
+  nav.main-nav{display:flex;gap:30px;}
+  nav.main-nav a{
+    font-size:15px;font-weight:600;color:var(--text);
+    padding:8px 2px;position:relative;
+  }
+  nav.main-nav a:hover{color:var(--teal);}
+  .header-actions{display:flex;align-items:center;gap:10px;}
+  .btn{
+    display:inline-block;padding:9px 18px;border-radius:8px;
+    font-size:14px;font-weight:700;cursor:pointer;border:none;
+    transition:transform .15s ease, box-shadow .15s ease;
+    white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn-ghost{background:transparent;color:var(--navy);border:1px solid var(--border);}
+  .btn-primary{background:var(--navy);color:#fff;}
+  .btn-primary:hover{background:var(--navy-dark);}
+  .btn-accent{background:var(--amber);color:var(--navy-dark);}
+  .btn-accent:hover{box-shadow:0 6px 18px rgba(245,166,35,.4);}
+  .btn-outline-light{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6);}
+  .hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:6px;}
+  .hamburger span{width:22px;height:2px;background:var(--navy);}
+
+  /* ===== Hero ===== */
+  .hero{
+    background:linear-gradient(160deg,var(--navy) 0%, #103a5c 55%, var(--teal) 130%);
+    color:#fff;padding:86px 24px 100px;position:relative;overflow:hidden;
+  }
+  .hero::after{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(circle at 80% 20%, rgba(63,216,200,.25), transparent 55%);
+  }
+  .hero-inner{max-width:840px;margin:0 auto;text-align:center;position:relative;z-index:1;}
+  .hero-inner .eyebrow{background:rgba(255,255,255,.14);color:#bdeee7;}
+  .hero h1{font-size:clamp(30px,4.4vw,48px);line-height:1.35;font-weight:800;color:#fff;}
+  .hero h1 em{font-style:normal;color:var(--teal-light);}
+  .hero p.sub{margin-top:18px;font-size:17px;color:#d9e6ef;max-width:600px;margin-left:auto;margin-right:auto;}
+  .search-box{
+    margin:36px auto 0;max-width:640px;display:flex;background:#fff;border-radius:14px;
+    padding:6px;box-shadow:0 14px 34px rgba(0,0,0,.25);
+  }
+  .search-box select{
+    border:none;background:var(--bg-alt);border-radius:9px;padding:0 12px;font-size:14px;font-weight:700;color:var(--navy);margin-right:6px;
+  }
+  .search-box input{
+    flex:1;border:none;outline:none;font-size:15px;padding:0 8px;color:var(--text);
+  }
+  .search-box button{
+    background:var(--teal);color:#fff;border:none;border-radius:9px;padding:0 22px;font-weight:700;cursor:pointer;font-size:14px;
+  }
+  .hero-tags{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;font-size:13px;color:#bcd3e0;}
+  .hero-tags span{background:rgba(255,255,255,.08);padding:4px 12px;border-radius:999px;}
+  .hero-cta{margin-top:34px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .stat-bar{
+    max-width:900px;margin:56px auto 0;display:grid;grid-template-columns:repeat(4,1fr);
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:16px;
+    padding:22px 10px;position:relative;z-index:1;backdrop-filter:blur(4px);
+  }
+  .stat-bar div{text-align:center;border-right:1px solid rgba(255,255,255,.15);}
+  .stat-bar div:last-child{border-right:none;}
+  .stat-bar strong{display:block;font-size:24px;color:#fff;}
+  .stat-bar span{font-size:13px;color:#bcd3e0;}
+
+  /* ===== Feature sections (6 menus) ===== */
+  .menu-section{padding:78px 24px;}
+  .menu-section.alt{background:var(--bg-alt);}
+  .menu-head{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap;
+    max-width:1180px;margin:0 auto 34px;
+  }
+  .menu-head .num{
+    font-size:13px;font-weight:800;color:var(--teal);letter-spacing:1px;margin-bottom:8px;display:block;
+  }
+  .menu-head h2{font-size:clamp(22px,3vw,30px);margin-bottom:8px;}
+  .menu-head p{color:var(--muted);max-width:520px;font-size:15px;}
+  .menu-head .icon-badge{
+    width:56px;height:56px;border-radius:16px;background:var(--navy);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:26px;flex:none;
+  }
+  .card-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:18px;max-width:1180px;margin:0 auto;
+  }
+  .card{
+    background:#fff;border:1px solid var(--border);border-radius:var(--radius);
+    padding:24px 20px;transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .card:hover{transform:translateY(-4px);box-shadow:var(--shadow);}
+  .card .card-icon{font-size:26px;margin-bottom:14px;}
+  .card h3{font-size:16.5px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .card p{font-size:13.8px;color:var(--muted);}
+  .badge{
+    font-size:10.5px;font-weight:800;background:var(--amber);color:var(--navy-dark);
+    padding:2px 8px;border-radius:6px;
+  }
+  .card-link{display:inline-block;margin-top:12px;font-size:13.5px;font-weight:700;color:var(--teal);}
+
+  /* case list (IP자료실 highlight) */
+  .case-list{max-width:1180px;margin:34px auto 0;display:grid;grid-template-columns:1.1fr 1fr;gap:18px;}
+  .case-item{
+    background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px 20px;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .tag-row{display:flex;gap:6px;flex-wrap:wrap;}
+  .tag{font-size:11.5px;font-weight:700;background:var(--bg-alt);color:var(--navy);padding:3px 9px;border-radius:6px;}
+  .case-item h4{font-size:15px;color:var(--text);font-weight:700;}
+  .case-item .meta{font-size:12.5px;color:var(--muted);}
+
+  /* Trial tracker mock (심판소송) */
+  .tracker-mock{
+    max-width:1180px;margin:36px auto 0;background:var(--navy);border-radius:18px;padding:34px;
+    color:#fff;display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center;
+  }
+  .tracker-mock h3{color:#fff;font-size:19px;margin-bottom:10px;}
+  .tracker-mock p{color:#bcd3e0;font-size:14px;margin-bottom:18px;}
+  .track-input{display:flex;gap:8px;}
+  .track-input input{flex:1;border:none;border-radius:8px;padding:12px 14px;font-size:14px;}
+  .progress-steps{display:flex;justify-content:space-between;position:relative;}
+  .progress-steps::before{content:"";position:absolute;top:9px;left:0;right:0;height:2px;background:rgba(255,255,255,.2);}
+  .progress-steps li{list-style:none;text-align:center;font-size:11.5px;color:#9fb8c8;position:relative;flex:1;}
+  .progress-steps .dot{
+    width:20px;height:20px;border-radius:50%;background:var(--navy);border:2px solid var(--teal-light);
+    margin:0 auto 8px;position:relative;z-index:1;
+  }
+  .progress-steps li.done .dot{background:var(--teal-light);border-color:var(--teal-light);}
+  .progress-steps li.done{color:#fff;}
+
+  /* Market grid */
+  .market-split{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+
+  /* jobs */
+  .job-list{max-width:1180px;margin:34px auto 0;display:flex;flex-direction:column;gap:12px;}
+  .job-row{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 20px;
+  }
+  .job-row .job-main{display:flex;align-items:center;gap:14px;}
+  .job-avatar{width:44px;height:44px;border-radius:10px;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;font-size:20px;}
+  .job-row h4{font-size:15px;}
+  .job-row .meta{font-size:12.5px;color:var(--muted);}
+
+  /* community tabs */
+  .community-grid{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr;gap:20px;}
+  .post-row{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);font-size:14.5px;}
+  .post-row .cat{color:var(--teal);font-weight:700;font-size:12.5px;margin-right:8px;}
+  .side-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:22px;}
+  .side-card h3{font-size:16px;margin-bottom:14px;}
+  .side-card li{font-size:13.8px;padding:8px 0;border-bottom:1px dashed var(--border);color:var(--muted);}
+
+  /* GIKI CTA banner */
+  .giki-banner{
+    max-width:1180px;margin:0 auto;background:linear-gradient(120deg,var(--teal),#0a7a8a);
+    border-radius:20px;padding:44px 40px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
+  }
+  .giki-banner h3{color:#fff;font-size:22px;margin-bottom:8px;}
+  .giki-banner p{color:#e3fbf8;font-size:14.5px;max-width:480px;}
+
+  /* growth story / roadmap */
+  .growth{padding:78px 24px;background:var(--navy);color:#fff;}
+  .growth .section-head h2{color:#fff;}
+  .growth .section-head p{color:#a9c2d1;}
+  .roadmap{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .phase-card{
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:26px;
+  }
+  .phase-card .phase-tag{font-size:12px;font-weight:800;color:var(--teal-light);letter-spacing:1px;}
+  .phase-card h4{color:#fff;font-size:18px;margin:8px 0 10px;}
+  .phase-card p{color:#bcd3e0;font-size:13.8px;}
+  .partner-row{
+    max-width:1000px;margin:50px auto 0;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center;
+  }
+  .partner-row div{padding:18px 10px;}
+  .partner-row .p-icon{font-size:24px;margin-bottom:8px;}
+  .partner-row strong{display:block;color:#fff;font-size:14.5px;margin-bottom:4px;}
+  .partner-row span{color:#a9c2d1;font-size:12.5px;}
+
+  /* footer */
+  footer{background:var(--navy-dark);color:#9fb8c8;padding:56px 24px 24px;}
+  .footer-grid{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1.4fr repeat(4,1fr);gap:30px;}
+  .footer-grid h5{color:#fff;font-size:14.5px;margin-bottom:14px;}
+  .footer-grid li{font-size:13.5px;padding:5px 0;}
+  .footer-grid li a:hover{color:var(--teal-light);}
+  .footer-brand .logo{color:#fff;}
+  .footer-brand p{font-size:13px;margin-top:12px;color:#7d94a3;max-width:260px;}
+  .footer-bottom{
+    max-width:1180px;margin:40px auto 0;padding-top:20px;border-top:1px solid rgba(255,255,255,.08);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12.5px;color:#7d94a3;
+  }
+
+  @media (max-width:960px){
+    nav.main-nav{display:none;}
+    .hamburger{display:flex;}
+    .card-grid,.market-split{grid-template-columns:repeat(2,1fr);}
+    .stat-bar{grid-template-columns:repeat(2,1fr);}
+    .stat-bar div:nth-child(2){border-right:none;}
+    .case-list,.community-grid,.tracker-mock{grid-template-columns:1fr;}
+    .roadmap,.partner-row{grid-template-columns:1fr;}
+    .footer-grid{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:560px){
+    .card-grid,.market-split{grid-template-columns:1fr;}
+    .search-box{flex-direction:column;gap:8px;padding:12px;}
+    .search-box select{margin-right:0;}
+    .footer-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="#top" class="logo">IP<span class="dot">바다</span></a>
+    <nav class="main-nav">
+      <a href="#archive">IP자료실</a>
+      <a href="#filing">특허출원</a>
+      <a href="#trial">심판·소송</a>
+      <a href="#market">IP마켓</a>
+      <a href="#jobs">구인구직</a>
+      <a href="#community">커뮤니티</a>
+    </nav>
+    <div class="header-actions">
+      <a class="btn btn-ghost" href="#login">로그인</a>
+      <a class="btn btn-primary" href="#signup">무료 회원가입</a>
+      <button class="hamburger" aria-label="메뉴 열기"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <div class="hero-inner">
+    <span class="eyebrow">대한민국 대표 IP 통합 플랫폼</span>
+    <h1>변리사와 기업 IP팀이<br>매일 찾는 <em>지식재산 바다</em>, IP바다</h1>
+    <p class="sub">판례·심결례 검색부터 AI 명세서 초안 작성, 심판 진행 추적, 특허 거래, IP 전문 채용까지 — 지식재산의 모든 여정을 한 곳에서.</p>
+
+    <div class="search-box">
+      <select>
+        <option>판례·심결례</option>
+        <option>법령·고시</option>
+        <option>서식·양식</option>
+      </select>
+      <input type="text" placeholder="예) 균등침해, 상표 유사판단, 특허 무효심판 인용률...">
+      <button>통합검색</button>
+    </div>
+    <div class="hero-tags">
+      <span>#특허법원판례</span><span>#상표유사여부</span><span>#PCT출원</span><span>#무효심판</span><span>#GIKI AI명세서</span>
+    </div>
+
+    <div class="hero-cta">
+      <a class="btn btn-accent" href="#filing">GIKI AI 명세서 무료체험 →</a>
+      <a class="btn btn-outline-light" href="#archive">판례 DB 둘러보기</a>
+    </div>
+
+    <div class="stat-bar">
+      <div><strong>128,000+</strong><span>판례·심결례 DB</span></div>
+      <div><strong>32,400</strong><span>가입 회원</span></div>
+      <div><strong>1,900+</strong><span>등록 변리사·전문가</span></div>
+      <div><strong>4,600+</strong><span>월간 채용·거래 공고</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ① IP자료실 -->
+<section class="menu-section" id="archive">
+  <div class="menu-head">
+    <div>
+      <span class="num">01 · CORE CONTENT</span>
+      <h2>IP자료실</h2>
+      <p>판례·심결례, 법령·고시, 서식·양식, 뉴스레터까지 — 변리사와 기업 특허팀이 반복 방문하는 IP바다의 핵심 콘텐츠 허브입니다.</p>
+    </div>
+    <div class="icon-badge">📚</div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">⚖️</div>
+      <h3>판례·심결례 DB</h3>
+      <p>특허법원·대법원 판례와 특허심판원 심결문을 키워드·쟁점별로 검색하고, 개별 해설 페이지로 확인하세요.</p>
+      <a class="card-link" href="#">판례 검색하기 →</a>
+    </div>
+    <div class="card">
+      <div class="card-icon">📜</div>
+      <h3>법령·고시</h3>
+      <p>특허법·상표법·디자인보호법 원문과 개정 이력, 실무 고시를 한눈에 비교합니다.</p>
+      <a class="card-link" href="#">법령 보기 →</a>
+    </div>
+    <div class="card">
+      <div class="card-icon">📝</div>
+      <h3>서식·양식</h3>
+      <p>출원서, 위임장, 각종 신청서 등 실무 서식을 무료로 다운로드할 수 있습니다.</p>
+      <a class="card-link" href="#">서식 다운로드 →</a>
+    </div>
+    <div class="card">
+      <div class="card-icon">✉️</div>
+      <h3>뉴스레터</h3>
+      <p>매주 발송되는 IP 동향 리포트와 주요 심결 분석을 이메일로 받아보세요.</p>
+      <a class="card-link" href="#">구독하기 →</a>
+    </div>
+  </div>
+
+  <div class="case-list">
+    <div class="case-item">
+      <div class="tag-row"><span class="tag">특허법원</span><span class="tag">균등침해</span></div>
+      <h4>구성요소 치환의 균등 여부, 과제 해결원리 동일성을 중심으로 판단한 사례</h4>
+      <span class="meta">2026.07.18 게재 · 조회 4,213</span>
+    </div>
+    <div class="case-item">
+      <div class="tag-row"><span class="tag">특허심판원</span><span class="tag">무효심판</span></div>
+      <h4>진보성 부정 심결에 대한 인용률 및 심판부 판단기준 요약·해설</h4>
+      <span class="meta">2026.07.15 게재 · 조회 3,687</span>
+    </div>
+  </div>
+</section>
+
+<!-- ② 특허출원 -->
+<section class="menu-section alt" id="filing">
+  <div class="menu-head">
+    <div>
+      <span class="num">02 · FILING TOOLS</span>
+      <h2>특허출원</h2>
+      <p>AI 명세서 초안 생성부터 선행기술 검색, 출원 진행 관리, 해외출원 가이드까지 — 출원의 모든 단계를 지원합니다.</p>
+    </div>
+    <div class="icon-badge">🧠</div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🤖</div>
+      <h3>AI 명세서 초안 생성 <span class="badge">GIKI 무료체험</span></h3>
+      <p>발명 개요만 입력하면 GIKI 엔진이 청구항·발명의 설명 초안을 자동 생성합니다.</p>
+      <a class="card-link" href="#">무료로 체험하기 →</a>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔍</div>
+      <h3>선행기술 검색</h3>
+      <p>KIPRIS 연동 검색으로 키워드·IPC 분류 기반 선행문헌을 빠르게 조회합니다.</p>
+      <a class="card-link" href="#">선행기술 검색 →</a>
+    </div>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <h3>출원 진행 관리</h3>
+      <p>출원번호를 등록하면 의견제출통지·등록결정 등 진행상황을 대시보드로 확인합니다.</p>
+      <a class="card-link" href="#">진행현황 등록 →</a>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌐</div>
+      <h3>PCT·해외출원 가이드</h3>
+      <p>국가별 출원 절차와 우선권 주장 마감일을 캘린더로 관리하세요.</p>
+      <a class="card-link" href="#">해외출원 가이드 →</a>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏷️</div>
+      <h3>상표·디자인 출원 안내</h3>
+      <p>상표 유사군 코드 검색부터 디자인 출원 절차까지 한 번에 안내합니다.</p>
+      <a class="card-link" href="#">안내 보기 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- GIKI 배너 -->
+<section class="menu-section" style="padding-top:0;">
+  <div class="giki-banner">
+    <div>
+      <h3>GIKI AI 명세서, 지금 무료로 체험해보세요</h3>
+      <p>발명 개요만 입력하면 5분 안에 청구항 초안이 완성됩니다. 회원가입 시 3회 무료 체험이 제공됩니다.</p>
+    </div>
+    <a class="btn btn-accent" href="#signup">무료체험 시작하기 →</a>
+  </div>
+</section>
+
+<!-- ③ 심판·소송 -->
+<section class="menu-section alt" id="trial">
+  <div class="menu-head">
+    <div>
+      <span class="num">03 · TRIAL &amp; LITIGATION</span>
+      <h2>심판·소송</h2>
+      <p>무효심판 분석, 침해 경고장 대응, 심판 진행 추적, 전문가 연결까지 — 분쟁 대응의 든든한 파트너입니다.</p>
+    </div>
+    <div class="icon-badge">⚔️</div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">📈</div>
+      <h3>무효심판 분석</h3>
+      <p>기술분야별 무효심판 인용률 통계와 심판부 판단 경향을 분석합니다.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📩</div>
+      <h3>침해 경고장 대응</h3>
+      <p>경고장 수령 시 대응 체크리스트와 답변서 템플릿을 제공합니다.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🧑‍⚖️</div>
+      <h3>소송 가이드</h3>
+      <p>특허침해 민사소송·형사고소 절차를 단계별로 안내합니다.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤝</div>
+      <h3>전문가 연결</h3>
+      <p>사건 유형에 맞는 변리사·변호사를 매칭해 드립니다.</p>
+      <span class="badge" style="margin-top:8px;display:inline-block;">프리미엄</span>
+    </div>
+  </div>
+
+  <div class="tracker-mock">
+    <div>
+      <h3>심판 진행 추적</h3>
+      <p>심판번호만 입력하면 실시간 진행상황과 예상 심결일을 알려드립니다.</p>
+      <div class="track-input">
+        <input type="text" placeholder="심판번호를 입력하세요 (예: 2026당1234)">
+        <button class="btn btn-accent" style="border-radius:8px;">조회하기</button>
+      </div>
+    </div>
+    <ul class="progress-steps">
+      <li class="done"><span class="dot"></span>심판청구</li>
+      <li class="done"><span class="dot"></span>답변서 제출</li>
+      <li class="done"><span class="dot"></span>구술심리</li>
+      <li><span class="dot"></span>심결</li>
+      <li><span class="dot"></span>확정</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ④ IP마켓 -->
+<section class="menu-section" id="market">
+  <div class="menu-head">
+    <div>
+      <span class="num">04 · IP MARKET</span>
+      <h2>IP마켓</h2>
+      <p>특허 거래, 기술이전·라이선스 중개, IP 가치평가, 투자유치 매칭 — IP바다가 가장 크게 성장할 핵심 마켓입니다.</p>
+    </div>
+    <div class="icon-badge">💹</div>
+  </div>
+
+  <div class="market-split">
+    <div class="card">
+      <div class="card-icon">🏦</div>
+      <h3>특허거래 마켓</h3>
+      <p>보유 특허를 등록하고 원하는 매물을 검색·거래하세요.</p>
+      <a class="card-link" href="#">매물 둘러보기 →</a>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔗</div>
+      <h3>기술이전·라이선스 중개</h3>
+      <p>기술 보유자와 수요기업을 전문 중개인이 연결합니다.</p>
+      <a class="card-link" href="#">중개 신청 →</a>
+    </div>
+    <div class="card">
+      <div class="card-icon">🧮</div>
+      <h3>IP 가치평가</h3>
+      <p>AI 기반 예비 가치평가로 특허의 시장 가치를 가늠해보세요.</p>
+      <a class="card-link" href="#">가치평가 받기 →</a>
+    </div>
+    <div class="card">
+      <div class="card-icon">💰</div>
+      <h3>투자유치 매칭</h3>
+      <p>IP 기반 스타트업과 투자자를 연결하는 매칭 서비스입니다.</p>
+      <a class="card-link" href="#">매칭 신청 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ⑤ 구인구직 -->
+<section class="menu-section alt" id="jobs">
+  <div class="menu-head">
+    <div>
+      <span class="num">05 · CAREER</span>
+      <h2>구인구직</h2>
+      <p>변리사 채용부터 기업 IP담당자, 번역·조사 외주, 프리랜서 마켓까지 — 국내 최초 IP 전문 채용 플랫폼입니다.</p>
+    </div>
+    <div class="icon-badge">💼</div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card"><div class="card-icon">🧑‍💼</div><h3>변리사 채용</h3><p>특허법인·로펌의 변리사 채용 공고를 확인하세요.</p></div>
+    <div class="card"><div class="card-icon">🏢</div><h3>기업 IP담당자 채용</h3><p>기업 특허팀·IP전략팀 채용 정보를 모았습니다.</p></div>
+    <div class="card"><div class="card-icon">🈳</div><h3>번역·조사 외주</h3><p>명세서 번역, 선행기술 조사 외주 프로젝트를 매칭합니다.</p></div>
+    <div class="card"><div class="card-icon">🧳</div><h3>프리랜서 마켓</h3><p>프로젝트 단위로 활동하는 IP 전문 프리랜서를 찾아보세요.</p></div>
+  </div>
+
+  <div class="job-list">
+    <div class="job-row">
+      <div class="job-main">
+        <div class="job-avatar">🧑‍💼</div>
+        <div>
+          <h4>전자·반도체 분야 변리사 (경력 3~7년)</h4>
+          <span class="meta">서울 강남 · 특허법인 · 정규직</span>
+        </div>
+      </div>
+      <a class="btn btn-ghost" href="#">공고 보기</a>
+    </div>
+    <div class="job-row">
+      <div class="job-main">
+        <div class="job-avatar">🏢</div>
+        <div>
+          <h4>기업부설연구소 IP전략 담당자</h4>
+          <span class="meta">경기 판교 · 중견기업 · 정규직</span>
+        </div>
+      </div>
+      <a class="btn btn-ghost" href="#">공고 보기</a>
+    </div>
+    <div class="job-row">
+      <div class="job-main">
+        <div class="job-avatar">🈳</div>
+        <div>
+          <h4>PCT 명세서 영문 번역 프리랜서 모집</h4>
+          <span class="meta">재택 · 건당 계약</span>
+        </div>
+      </div>
+      <a class="btn btn-ghost" href="#">공고 보기</a>
+    </div>
+  </div>
+</section>
+
+<!-- ⑥ 커뮤니티 -->
+<section class="menu-section" id="community">
+  <div class="menu-head">
+    <div>
+      <span class="num">06 · COMMUNITY</span>
+      <h2>커뮤니티</h2>
+      <p>Q&amp;A, 칼럼·기고, 세미나·교육, 뉴스·트렌드 — 변리사와 기업 IP팀, 스타트업이 함께 교류하는 공간입니다.</p>
+    </div>
+    <div class="icon-badge">💬</div>
+  </div>
+
+  <div class="community-grid">
+    <div>
+      <div class="post-row"><span><span class="cat">Q&A</span>디자인 출원 시 유사군코드 판단 기준이 궁금합니다</span><span class="meta">답변 12</span></div>
+      <div class="post-row"><span><span class="cat">칼럼</span>2026년 개정 특허법, 실무에서 놓치기 쉬운 3가지</span><span class="meta">조회 2,104</span></div>
+      <div class="post-row"><span><span class="cat">세미나</span>[온라인] AI 발명과 특허성 판단 실무 세미나</span><span class="meta">신청 마감 D-5</span></div>
+      <div class="post-row"><span><span class="cat">뉴스</span>특허청, 스타트업 대상 IP 바우처 지원사업 공고</span><span class="meta">조회 3,320</span></div>
+      <div class="post-row"><span><span class="cat">Q&A</span>해외출원 시 우선권 주장 기간 계산 방법</span><span class="meta">답변 7</span></div>
+    </div>
+    <div class="side-card">
+      <h3>이번 주 인기 태그</h3>
+      <ul>
+        <li>#특허무효심판</li>
+        <li>#상표유사판단</li>
+        <li>#PCT우선권</li>
+        <li>#AI발명특허성</li>
+        <li>#영업비밀보호</li>
+      </ul>
+      <a class="btn btn-primary" style="margin-top:16px;width:100%;text-align:center;" href="#">커뮤니티 바로가기</a>
+    </div>
+  </div>
+</section>
+
+<!-- 성장 스토리 / 로드맵 -->
+<section class="growth">
+  <div class="section-head">
+    <span class="eyebrow" style="background:rgba(255,255,255,.1);color:var(--teal-light);">우리의 여정</span>
+    <h2>IP바다가 만들어가는 단계별 성장</h2>
+    <p>자료실과 커뮤니티로 시작해, AI 도구와 채용, 그리고 IP마켓·기업 솔루션까지 — 하나씩 단단하게 확장합니다.</p>
+  </div>
+  <div class="roadmap">
+    <div class="phase-card">
+      <span class="phase-tag">PHASE 1</span>
+      <h4>자료실·커뮤니티 오픈</h4>
+      <p>판례·심결례 DB와 법령 자료를 무료로 개방하고, Q&A 커뮤니티로 첫 이용자를 만납니다.</p>
+    </div>
+    <div class="phase-card">
+      <span class="phase-tag">PHASE 2</span>
+      <h4>AI 도구 &amp; 구인구직 확장</h4>
+      <p>GIKI AI 명세서 도구와 IP 전문 채용 서비스를 더해 방문자를 회원으로 전환합니다.</p>
+    </div>
+    <div class="phase-card">
+      <span class="phase-tag">PHASE 3</span>
+      <h4>IP마켓 &amp; 기업 솔루션</h4>
+      <p>특허 거래·라이선스 중개와 기업용 IP 포트폴리오 대시보드로 플랫폼 비즈니스를 완성합니다.</p>
+    </div>
+  </div>
+
+  <div class="partner-row">
+    <div><div class="p-icon">📢</div><strong>광고 제휴</strong><span>배너·네이티브 광고 문의</span></div>
+    <div><div class="p-icon">⭐</div><strong>프리미엄 멤버십</strong><span>AI 도구 무제한 · 판례 전문 열람</span></div>
+    <div><div class="p-icon">🤝</div><strong>마켓 파트너</strong><span>거래·매칭 중개 파트너십</span></div>
+    <div><div class="p-icon">🏢</div><strong>B2B 솔루션</strong><span>기업 전용 IP 포트폴리오 대시보드</span></div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="#top" class="logo">IP<span class="dot">바다</span></a>
+      <p>대한민국 IP 전문가를 위한 올인원 플랫폼. 판례·심결례부터 출원, 심판·소송, 마켓, 채용, 커뮤니티까지.</p>
+    </div>
+    <div>
+      <h5>IP자료실</h5>
+      <ul><li><a href="#archive">판례·심결례 DB</a></li><li><a href="#archive">법령·고시</a></li><li><a href="#archive">서식·양식</a></li><li><a href="#archive">뉴스레터</a></li></ul>
+    </div>
+    <div>
+      <h5>특허출원 · 심판</h5>
+      <ul><li><a href="#filing">AI 명세서 생성</a></li><li><a href="#filing">선행기술 검색</a></li><li><a href="#trial">심판 진행 추적</a></li><li><a href="#trial">전문가 연결</a></li></ul>
+    </div>
+    <div>
+      <h5>IP마켓 · 채용</h5>
+      <ul><li><a href="#market">특허거래 마켓</a></li><li><a href="#market">기술이전·라이선스</a></li><li><a href="#jobs">변리사 채용</a></li><li><a href="#jobs">프리랜서 마켓</a></li></ul>
+    </div>
+    <div>
+      <h5>회사 정보</h5>
+      <ul><li><a href="#">이용약관</a></li><li><a href="#">개인정보처리방침</a></li><li><a href="#">광고·제휴 문의</a></li><li><a href="#">고객센터</a></li></ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 IP바다(IPbada). All rights reserved.</span>
+    <span>본 사이트의 판례·법령 정보는 참고용이며 법적 효력을 갖지 않습니다.</span>
+  </div>
+</footer>
+
+<script>
+  document.querySelector('.hamburger').addEventListener('click', function(){
+    var nav = document.querySelector('.main-nav');
+    var isOpen = nav.style.display === 'flex';
+    nav.style.display = isOpen ? 'none' : 'flex';
+    nav.style.flexDirection = 'column';
+    nav.style.position = 'absolute';
+    nav.style.top = '64px';
+    nav.style.left = '0';
+    nav.style.right = '0';
+    nav.style.background = '#fff';
+    nav.style.padding = '16px 24px';
+    nav.style.borderBottom = '1px solid var(--border)';
+    nav.style.gap = '16px';
+  });
+</script>
+
+</body>
+</html>
