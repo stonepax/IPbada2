@@ -226,6 +226,32 @@
     display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12.5px;color:#7286a3;
   }
 
+  /* ===== Auth modal ===== */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(11,25,52,.55);backdrop-filter:blur(2px);
+    display:none;align-items:center;justify-content:center;z-index:200;padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{
+    background:#fff;border-radius:16px;padding:32px;max-width:400px;width:100%;
+    box-shadow:0 20px 50px rgba(11,25,52,.3);position:relative;
+  }
+  .modal-close{position:absolute;top:16px;right:18px;background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer;line-height:1;}
+  .modal-tabs{display:flex;gap:6px;margin-bottom:22px;background:var(--bg-alt);border-radius:10px;padding:4px;}
+  .modal-tabs button{flex:1;padding:9px 0;border:none;background:none;border-radius:8px;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;}
+  .modal-tabs button.active{background:#fff;color:var(--navy);box-shadow:0 2px 6px rgba(11,25,52,.08);}
+  .auth-form{display:none;flex-direction:column;gap:12px;}
+  .auth-form.active{display:flex;}
+  .auth-form input{width:100%;border:1px solid var(--border);border-radius:9px;padding:12px 14px;font-size:14px;font-family:inherit;}
+  .auth-form button{width:100%;margin-top:4px;}
+  .auth-msg{font-size:13px;min-height:18px;}
+  .auth-msg.error{color:#d92d20;}
+  .auth-msg.success{color:#0a7a4a;}
+  .user-chip{font-size:13.5px;font-weight:700;color:var(--navy);}
+  .form-msg{font-size:13.5px;margin-top:12px;text-align:center;min-height:18px;}
+  .form-msg.error{color:#d92d20;}
+  .form-msg.success{color:#0a7a4a;}
+
   @media (max-width:960px){
     nav.main-nav{display:none;}
     .hamburger{display:flex;}
@@ -257,13 +283,35 @@
       <a href="#jobs">구인구직</a>
       <a href="#community">커뮤니티</a>
     </nav>
-    <div class="header-actions">
-      <a class="btn btn-ghost" href="#login">로그인</a>
-      <a class="btn btn-primary" href="#signup">무료 회원가입</a>
+    <div class="header-actions" id="auth-actions">
+      <a class="btn btn-ghost" href="#login" data-auth-open="login">로그인</a>
+      <a class="btn btn-primary" href="#signup" data-auth-open="signup">무료 회원가입</a>
       <button class="hamburger" aria-label="메뉴 열기"><span></span><span></span><span></span></button>
     </div>
   </div>
 </header>
+
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal-box">
+    <button class="modal-close" id="auth-modal-close" type="button" aria-label="닫기">✕</button>
+    <div class="modal-tabs">
+      <button type="button" class="active" data-tab="login">로그인</button>
+      <button type="button" data-tab="signup">회원가입</button>
+    </div>
+    <form class="auth-form active" id="login-form" data-form="login">
+      <input type="email" name="email" placeholder="이메일" required>
+      <input type="password" name="password" placeholder="비밀번호" required>
+      <button type="submit" class="btn btn-primary">로그인</button>
+      <p class="auth-msg" id="login-msg"></p>
+    </form>
+    <form class="auth-form" id="signup-form" data-form="signup">
+      <input type="email" name="email" placeholder="이메일" required>
+      <input type="password" name="password" placeholder="비밀번호 (6자 이상)" required minlength="6">
+      <button type="submit" class="btn btn-primary">무료 회원가입</button>
+      <p class="auth-msg" id="signup-msg"></p>
+    </form>
+  </div>
+</div>
 
 <section class="hero" id="top">
   <div class="hero-inner">
@@ -271,7 +319,7 @@
     <h1>출원부터 분쟁, 거래까지<br>귀사의 IP 여정을 <em>하나의 플랫폼</em>에서<br>관리하세요</h1>
     <p class="sub">판례·심결례 검색, AI 명세서 초안 작성, 심판 진행 추적, 특허 거래, IP 전문 채용까지 — 변리사와 기업 IP팀, 스타트업이 단계마다 필요한 모든 것을 한 곳에서 제공합니다.</p>
     <div class="hero-cta">
-      <a class="btn btn-primary" href="#signup">무료 회원가입</a>
+      <a class="btn btn-primary" href="#signup" data-auth-open="signup">무료 회원가입</a>
       <a class="btn btn-outline-light" href="#archive">서비스 살펴보기</a>
     </div>
   </div>
@@ -445,7 +493,7 @@
     <h3>지금, IP바다에서 시작하세요</h3>
     <p>판례 검색부터 AI 출원, 전문가 연결까지 — 회원가입 후 바로 이용할 수 있습니다.</p>
     <div class="hero-cta">
-      <a class="btn btn-primary" href="#signup" style="background:#fff;color:var(--navy);">무료 회원가입</a>
+      <a class="btn btn-primary" href="#signup" data-auth-open="signup" style="background:#fff;color:var(--navy);">무료 회원가입</a>
     </div>
   </div>
 </section>
@@ -457,22 +505,23 @@
     <h2>문의하기</h2>
     <p>제휴·광고, 채용 공고 등록, 기타 문의사항을 남겨주시면 담당자가 빠르게 연락드립니다.</p>
   </div>
-  <form class="contact-form" onsubmit="return false;">
+  <form class="contact-form" id="contact-form">
     <div class="form-row">
-      <input type="text" placeholder="이름" required>
-      <input type="tel" placeholder="연락처" required>
+      <input type="text" name="name" placeholder="이름" required>
+      <input type="tel" name="phone" placeholder="연락처" required>
     </div>
-    <input type="email" class="full" placeholder="이메일" required>
-    <select class="full">
-      <option>문의 유형을 선택하세요</option>
+    <input type="email" class="full" name="email" placeholder="이메일" required>
+    <select class="full" name="inquiry_type" required>
+      <option value="">문의 유형을 선택하세요</option>
       <option>회원가입·이용 문의</option>
       <option>제휴·광고 문의</option>
       <option>채용 공고 등록</option>
       <option>IP마켓 거래 문의</option>
       <option>기타</option>
     </select>
-    <textarea placeholder="문의 내용을 입력해주세요"></textarea>
+    <textarea name="message" placeholder="문의 내용을 입력해주세요" required></textarea>
     <button type="submit" class="btn btn-primary">문의 제출</button>
+    <p class="form-msg" id="contact-msg"></p>
   </form>
 </section>
 
@@ -519,20 +568,136 @@
   </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-  document.querySelector('.hamburger').addEventListener('click', function(){
-    var nav = document.querySelector('.main-nav');
-    var isOpen = nav.style.display === 'flex';
-    nav.style.display = isOpen ? 'none' : 'flex';
-    nav.style.flexDirection = 'column';
-    nav.style.position = 'absolute';
-    nav.style.top = '64px';
-    nav.style.left = '0';
-    nav.style.right = '0';
-    nav.style.background = '#fff';
-    nav.style.padding = '16px 24px';
-    nav.style.borderBottom = '1px solid var(--border)';
-    nav.style.gap = '16px';
+  /* ---- UI bindings run first and unconditionally, independent of Supabase ---- */
+  function bindHamburger(){
+    var h = document.querySelector('.hamburger');
+    if(!h) return;
+    h.addEventListener('click', function(){
+      var nav = document.querySelector('.main-nav');
+      var isOpen = nav.style.display === 'flex';
+      nav.style.display = isOpen ? 'none' : 'flex';
+      nav.style.flexDirection = 'column';
+      nav.style.position = 'absolute';
+      nav.style.top = '64px';
+      nav.style.left = '0';
+      nav.style.right = '0';
+      nav.style.background = '#fff';
+      nav.style.padding = '16px 24px';
+      nav.style.borderBottom = '1px solid var(--border)';
+      nav.style.gap = '16px';
+    });
+  }
+  bindHamburger();
+
+  /* ---- Auth modal open/close/tabs ---- */
+  var authModal = document.getElementById('auth-modal');
+
+  function openAuthModal(mode){
+    document.querySelectorAll('.auth-form').forEach(function(f){ f.classList.remove('active'); });
+    document.querySelectorAll('.modal-tabs button').forEach(function(b){ b.classList.remove('active'); });
+    document.getElementById(mode + '-form').classList.add('active');
+    document.querySelector('.modal-tabs button[data-tab="' + mode + '"]').classList.add('active');
+    authModal.classList.add('open');
+  }
+  function closeAuthModal(){ authModal.classList.remove('open'); }
+
+  document.addEventListener('click', function(e){
+    var trigger = e.target.closest('[data-auth-open]');
+    if(trigger){ e.preventDefault(); openAuthModal(trigger.dataset.authOpen); }
+  });
+  document.getElementById('auth-modal-close').addEventListener('click', closeAuthModal);
+  authModal.addEventListener('click', function(e){ if(e.target === authModal) closeAuthModal(); });
+  document.querySelectorAll('.modal-tabs button').forEach(function(btn){
+    btn.addEventListener('click', function(){ openAuthModal(btn.dataset.tab); });
+  });
+
+  /* ---- Supabase client: guarded init so a blocked/failed CDN load never breaks the page above ---- */
+  var SUPABASE_URL = 'https://guofrvaebojjalmidoxg.supabase.co';
+  var SUPABASE_ANON_KEY = 'sb_publishable_5cc3UHFZCe-BgCuiBZO64Q_12OI7yQc';
+  var supabaseClient = null;
+  try {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch(err) {
+    console.error('Supabase 초기화 실패:', err);
+  }
+
+  /* ---- Supabase Auth: login / signup / logout ---- */
+  document.getElementById('login-form').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var msg = document.getElementById('login-msg');
+    if(!supabaseClient){ msg.textContent = '서비스 연결에 실패했습니다. 잠시 후 다시 시도해주세요.'; msg.className = 'auth-msg error'; return; }
+    msg.textContent = '로그인 중...'; msg.className = 'auth-msg';
+    var email = e.target.email.value, password = e.target.password.value;
+    var result = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+    if(result.error){ msg.textContent = result.error.message; msg.className = 'auth-msg error'; }
+    else { msg.textContent = '로그인 성공!'; msg.className = 'auth-msg success'; setTimeout(closeAuthModal, 800); }
+  });
+
+  document.getElementById('signup-form').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var msg = document.getElementById('signup-msg');
+    if(!supabaseClient){ msg.textContent = '서비스 연결에 실패했습니다. 잠시 후 다시 시도해주세요.'; msg.className = 'auth-msg error'; return; }
+    msg.textContent = '가입 처리 중...'; msg.className = 'auth-msg';
+    var email = e.target.email.value, password = e.target.password.value;
+    var result = await supabaseClient.auth.signUp({ email: email, password: password });
+    if(result.error){ msg.textContent = result.error.message; msg.className = 'auth-msg error'; }
+    else { msg.textContent = '가입 완료! 이메일을 확인해주세요.'; msg.className = 'auth-msg success'; }
+  });
+
+  function renderAuthUI(session){
+    var actions = document.getElementById('auth-actions');
+    var hamburgerHTML = '<button class="hamburger" aria-label="메뉴 열기"><span></span><span></span><span></span></button>';
+    if(session && session.user){
+      actions.innerHTML =
+        '<span class="user-chip">' + session.user.email + '</span>' +
+        '<button class="btn btn-ghost" id="logout-btn" type="button">로그아웃</button>' + hamburgerHTML;
+      document.getElementById('logout-btn').addEventListener('click', async function(){
+        if(supabaseClient) await supabaseClient.auth.signOut();
+      });
+    } else {
+      actions.innerHTML =
+        '<a class="btn btn-ghost" href="#login" data-auth-open="login">로그인</a>' +
+        '<a class="btn btn-primary" href="#signup" data-auth-open="signup">무료 회원가입</a>' + hamburgerHTML;
+    }
+    bindHamburger();
+  }
+
+  if(supabaseClient){
+    supabaseClient.auth.onAuthStateChange(function(_event, session){ renderAuthUI(session); });
+    supabaseClient.auth.getSession().then(function(res){ renderAuthUI(res.data.session); });
+  }
+
+  /* ---- Contact form -> Supabase table "inquiries" ---- */
+  var contactForm = document.getElementById('contact-form');
+  contactForm.addEventListener('submit', async function(e){
+    e.preventDefault();
+    var btn = contactForm.querySelector('button[type="submit"]');
+    var msgEl = document.getElementById('contact-msg');
+    if(!supabaseClient){
+      msgEl.textContent = '서비스 연결에 실패했습니다. 잠시 후 다시 시도해주세요.';
+      msgEl.className = 'form-msg error';
+      return;
+    }
+    btn.disabled = true; btn.textContent = '제출 중...';
+    var payload = {
+      name: contactForm.name.value,
+      phone: contactForm.phone.value,
+      email: contactForm.email.value,
+      inquiry_type: contactForm.inquiry_type.value,
+      message: contactForm.message.value
+    };
+    var result = await supabaseClient.from('inquiries').insert(payload);
+    if(result.error){
+      msgEl.textContent = '제출에 실패했습니다: ' + result.error.message;
+      msgEl.className = 'form-msg error';
+    } else {
+      msgEl.textContent = '문의가 접수되었습니다. 빠르게 연락드리겠습니다.';
+      msgEl.className = 'form-msg success';
+      contactForm.reset();
+    }
+    btn.disabled = false; btn.textContent = '문의 제출';
   });
 </script>
 
