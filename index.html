@@ -650,6 +650,18 @@
   }
   bindHamburger();
 
+  /* ---- Make whole service cards clickable, not just the "자세히 보기" link ---- */
+  document.querySelectorAll('.card').forEach(function(card){
+    var link = card.querySelector('.card-link');
+    if(!link) return;
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', function(e){
+      if(e.target.closest('a')) return;
+      var target = document.querySelector(link.getAttribute('href'));
+      if(target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
   /* ---- Auth modal open/close/tabs ---- */
   var authModal = document.getElementById('auth-modal');
 
