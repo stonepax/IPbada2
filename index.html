@@ -704,14 +704,21 @@
     return div.innerHTML;
   }
 
+  // Normalizes Hangul (NFC) and collapses look-alike "middle dot" characters
+  // (ㆍ・‧• etc.) to one, so filter comparisons survive copy/paste or download
+  // round-trips that silently swap visually-identical Unicode characters.
+  function normalizeText(s){
+    return (s || '').normalize('NFC').replace(/[ㆍ・‧•·]/g, '·').trim();
+  }
+
   function renderResources(){
     var grid = document.getElementById('resource-grid');
     var format = document.getElementById('format-filter').value;
     var stage = document.getElementById('stage-filter').value;
     var filtered = allResources.filter(function(r){
-      if(currentCategory !== 'all' && r.category !== currentCategory) return false;
-      if(format !== 'all' && r.format !== format) return false;
-      if(stage !== 'all' && (!r.growth_stage || r.growth_stage.indexOf(stage) === -1)) return false;
+      if(currentCategory !== 'all' && normalizeText(r.category) !== normalizeText(currentCategory)) return false;
+      if(format !== 'all' && normalizeText(r.format) !== normalizeText(format)) return false;
+      if(stage !== 'all' && (!r.growth_stage || !r.growth_stage.some(function(s){ return normalizeText(s) === normalizeText(stage); }))) return false;
       return true;
     });
     if(filtered.length === 0){
