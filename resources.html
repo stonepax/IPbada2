@@ -18,7 +18,7 @@
       <a href="index.html#trial">심판·소송</a>
       <a href="index.html#market">IP마켓</a>
       <a href="index.html#jobs">구인구직</a>
-      <a href="index.html#community">커뮤니티</a>
+      <a href="community.html">커뮤니티</a>
     </nav>
     <div class="header-actions" id="auth-actions">
       <a class="btn btn-ghost" href="#login" data-auth-open="login">로그인</a>
@@ -166,11 +166,7 @@
   var allResources = [];
   var currentCategory = 'all';
 
-  function escapeHtml(str){
-    var div = document.createElement('div');
-    div.textContent = str || '';
-    return div.innerHTML;
-  }
+  // escapeHtml is provided by app.js
 
   // Normalizes Hangul (NFC) and collapses look-alike "middle dot" characters
   // (ㆍ・‧• etc.) to one, so filter comparisons survive copy/paste or download

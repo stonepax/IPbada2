@@ -1,3 +1,10 @@
+/* ---- Shared helpers ---- */
+function escapeHtml(str){
+  var div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
 /* ---- UI bindings run first and unconditionally, independent of Supabase ---- */
 function bindHamburger(){
   var h = document.querySelector('.hamburger');
@@ -92,7 +99,10 @@ document.getElementById('signup-form').addEventListener('submit', async function
   else { msg.textContent = '가입 완료! 이메일을 확인해주세요.'; msg.className = 'auth-msg success'; }
 });
 
+var currentSession = null;
+
 function renderAuthUI(session){
+  currentSession = session;
   var actions = document.getElementById('auth-actions');
   var hamburgerHTML = '<button class="hamburger" aria-label="메뉴 열기"><span></span><span></span><span></span></button>';
   if(session && session.user){

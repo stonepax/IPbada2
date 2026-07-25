@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>커뮤니티 Q&amp;A | IP바다</title>
+<meta name="description" content="IP 관련 궁금한 점을 질문하고, 다른 창업자·전문가의 답변을 받아보세요.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo"><span class="mark"></span>IP바다</a>
+    <nav class="main-nav">
+      <a href="resources.html">IP자료실</a>
+      <a href="index.html#filing">특허출원</a>
+      <a href="index.html#trial">심판·소송</a>
+      <a href="index.html#market">IP마켓</a>
+      <a href="index.html#jobs">구인구직</a>
+      <a href="community.html">커뮤니티</a>
+    </nav>
+    <div class="header-actions" id="auth-actions">
+      <a class="btn btn-ghost" href="#login" data-auth-open="login">로그인</a>
+      <a class="btn btn-primary" href="#signup" data-auth-open="signup">무료 회원가입</a>
+      <button class="hamburger" aria-label="메뉴 열기"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal-box">
+    <button class="modal-close" id="auth-modal-close" type="button" aria-label="닫기">✕</button>
+    <div class="modal-tabs">
+      <button type="button" class="active" data-tab="login">로그인</button>
+      <button type="button" data-tab="signup">회원가입</button>
+    </div>
+    <form class="auth-form active" id="login-form" data-form="login">
+      <input type="email" name="email" placeholder="이메일" required>
+      <input type="password" name="password" placeholder="비밀번호" required>
+      <button type="submit" class="btn btn-primary">로그인</button>
+      <p class="auth-msg" id="login-msg"></p>
+    </form>
+    <form class="auth-form" id="signup-form" data-form="signup">
+      <input type="email" name="email" placeholder="이메일" required>
+      <input type="password" name="password" placeholder="비밀번호 (6자 이상)" required minlength="6">
+      <button type="submit" class="btn btn-primary">무료 회원가입</button>
+      <p class="auth-msg" id="signup-msg"></p>
+    </form>
+  </div>
+</div>
+
+<!-- 커뮤니티: Q&A 게시판 -->
+<section class="section" id="top">
+  <div class="section-head">
+    <span class="eyebrow">커뮤니티</span>
+    <h2>IP Q&amp;A 게시판</h2>
+    <p>궁금한 IP 이슈를 질문하고, 다른 창업자·전문가의 답변을 받아보세요.</p>
+    <button type="button" id="qna-ask-toggle" class="btn btn-dark" style="margin-top:16px;">+ 질문 등록하기</button>
+  </div>
+
+  <div class="qna-panel" id="qna-ask-panel" style="display:none;">
+    <form id="qna-question-form">
+      <input type="text" name="title" placeholder="질문 제목" required>
+      <textarea name="body" placeholder="궁금한 내용을 자세히 적어주세요" required></textarea>
+      <button type="submit" class="btn btn-primary">질문 등록</button>
+      <p class="form-msg" id="qna-question-msg"></p>
+    </form>
+  </div>
+
+  <div class="qna-list" id="qna-list">
+    <p class="qna-empty">질문을 불러오는 중입니다...</p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="logo"><span class="mark"></span>IP바다</a>
+      <p>대한민국 IP 전문가를 위한 올인원 플랫폼. 판례·심결례부터 출원, 심판·소송, 마켓, 채용, 커뮤니티까지.</p>
+    </div>
+    <div>
+      <h5>IP자료실</h5>
+      <ul><li><a href="resources.html">전체 자료</a></li><li><a href="resources.html">성장단계별 자료</a></li></ul>
+    </div>
+    <div>
+      <h5>특허출원 · 심판</h5>
+      <ul><li><a href="index.html#filing">AI 명세서 생성</a></li><li><a href="index.html#filing">선행기술 검색</a></li><li><a href="index.html#trial">심판 진행 추적</a></li><li><a href="index.html#trial">전문가 연결</a></li></ul>
+    </div>
+    <div>
+      <h5>IP마켓 · 채용</h5>
+      <ul><li><a href="index.html#market">특허거래 마켓</a></li><li><a href="index.html#market">기술이전·라이선스</a></li><li><a href="index.html#jobs">변리사 채용</a></li><li><a href="index.html#jobs">프리랜서 마켓</a></li></ul>
+    </div>
+    <div>
+      <h5>회사 정보</h5>
+      <ul><li><a href="#">이용약관</a></li><li><a href="#">개인정보처리방침</a></li><li><a href="index.html#jobs-detail">제휴·광고 문의</a></li><li><a href="index.html#jobs-detail">고객센터</a></li></ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 IP바다(IPbada). All rights reserved.</span>
+    <span>본 사이트의 판례·법령 정보는 참고용이며 법적 효력을 갖지 않습니다.</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="app.js"></script>
+<script>
+  /* ---- Community Q&A: load, render, post questions & answers ---- */
+  var allQuestions = [];
+  var allAnswers = [];
+
+  function formatDate(iso){
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return '';
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '.' + mm + '.' + dd;
+  }
+
+  function emailToName(email){
+    if(!email) return '익명';
+    return email.split('@')[0];
+  }
+
+  function renderQna(){
+    var list = document.getElementById('qna-list');
+    var openIds = Array.prototype.map.call(list.querySelectorAll('.qna-item[open]'), function(el){ return el.dataset.qid; });
+
+    if(allQuestions.length === 0){
+      list.innerHTML = '<p class="qna-empty">아직 등록된 질문이 없습니다. 첫 질문을 남겨보세요!</p>';
+      return;
+    }
+
+    list.innerHTML = allQuestions.map(function(q){
+      var answers = allAnswers.filter(function(a){ return a.question_id === q.id; });
+      var answersHtml = answers.map(function(a){
+        return '' +
+          '<div class="qna-answer">' +
+            '<div class="qna-answer-meta">' + escapeHtml(emailToName(a.author_email)) + ' · ' + formatDate(a.created_at) + '</div>' +
+            '<p>' + escapeHtml(a.body) + '</p>' +
+          '</div>';
+      }).join('');
+      return '' +
+        '<details class="qna-item" data-qid="' + q.id + '">' +
+          '<summary>' +
+            '<span class="qna-title">' + escapeHtml(q.title) + '</span>' +
+            '<span class="qna-meta">' + escapeHtml(emailToName(q.author_email)) + ' · ' + formatDate(q.created_at) + ' · 답변 ' + answers.length + '개</span>' +
+          '</summary>' +
+          '<div class="qna-body">' +
+            '<p>' + escapeHtml(q.body) + '</p>' +
+            '<div class="qna-answers">' + answersHtml + '</div>' +
+            '<form class="qna-answer-form" data-question-id="' + q.id + '">' +
+              '<textarea placeholder="답변을 작성해주세요" required></textarea>' +
+              '<button type="submit" class="btn btn-primary">답변 등록</button>' +
+              '<p class="form-msg"></p>' +
+            '</form>' +
+          '</div>' +
+        '</details>';
+    }).join('');
+
+    openIds.forEach(function(id){
+      var el = list.querySelector('.qna-item[data-qid="' + id + '"]');
+      if(el) el.open = true;
+    });
+  }
+
+  async function loadQna(){
+    var list = document.getElementById('qna-list');
+    if(!supabaseClient){
+      list.innerHTML = '<p class="qna-empty">게시판 서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.</p>';
+      return;
+    }
+    var qResult = await supabaseClient.from('qna_questions').select('*').order('created_at', { ascending: false });
+    if(qResult.error){
+      list.innerHTML = '<p class="qna-empty">질문을 불러오지 못했습니다: ' + escapeHtml(qResult.error.message) + '</p>';
+      return;
+    }
+    var aResult = await supabaseClient.from('qna_answers').select('*').order('created_at', { ascending: true });
+    allQuestions = qResult.data || [];
+    allAnswers = aResult.error ? [] : (aResult.data || []);
+    renderQna();
+  }
+  loadQna();
+
+  document.getElementById('qna-ask-toggle').addEventListener('click', function(){
+    if(!currentSession){ openAuthModal('login'); return; }
+    var panel = document.getElementById('qna-ask-panel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  });
+
+  document.getElementById('qna-question-form').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var form = e.target;
+    var msg = document.getElementById('qna-question-msg');
+    if(!supabaseClient){ msg.textContent = '서비스 연결에 실패했습니다. 잠시 후 다시 시도해주세요.'; msg.className = 'form-msg error'; return; }
+    if(!currentSession){ openAuthModal('login'); return; }
+
+    var btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true; btn.textContent = '등록 중...';
+    var result = await supabaseClient.from('qna_questions').insert({
+      title: form.title.value,
+      body: form.body.value,
+      author_email: currentSession.user.email
+    });
+    if(result.error){
+      msg.textContent = '등록 실패: ' + result.error.message;
+      msg.className = 'form-msg error';
+    } else {
+      msg.textContent = '질문이 등록되었습니다!';
+      msg.className = 'form-msg success';
+      form.reset();
+      document.getElementById('qna-ask-panel').style.display = 'none';
+      loadQna();
+    }
+    btn.disabled = false; btn.textContent = '질문 등록';
+  });
+
+  // Event delegation: answer forms are re-created on every render, so bind once on the list container.
+  document.getElementById('qna-list').addEventListener('submit', async function(e){
+    var form = e.target.closest('.qna-answer-form');
+    if(!form) return;
+    e.preventDefault();
+    if(!supabaseClient){ return; }
+    if(!currentSession){ openAuthModal('login'); return; }
+
+    var questionId = form.dataset.questionId;
+    var textarea = form.querySelector('textarea');
+    var msg = form.querySelector('.form-msg');
+    var btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true; btn.textContent = '등록 중...';
+
+    var result = await supabaseClient.from('qna_answers').insert({
+      question_id: questionId,
+      body: textarea.value,
+      author_email: currentSession.user.email
+    });
+    if(result.error){
+      msg.textContent = '등록 실패: ' + result.error.message;
+      msg.className = 'form-msg error';
+      btn.disabled = false; btn.textContent = '답변 등록';
+    } else {
+      loadQna();
+    }
+  });
+</script>
+
+</body>
+</html>
