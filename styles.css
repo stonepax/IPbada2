@@ -186,6 +186,7 @@ nav.main-nav a:hover{color:var(--blue);}
 .filter-pill:hover{border-color:var(--blue);color:var(--blue);}
 .filter-pill.active{background:var(--navy);border-color:var(--navy);color:#fff;}
 .filter-select{padding:8px 14px;border-radius:999px;border:1px solid var(--border);background:#fff;font-size:13.5px;font-weight:700;color:var(--text);}
+.search-input{padding:8px 16px;border-radius:999px;border:1px solid var(--border);background:#fff;font-size:13.5px;font-family:inherit;min-width:240px;}
 .resource-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:1180px;margin:24px auto 0;}
 .resource-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:22px;display:flex;flex-direction:column;gap:10px;}
 .resource-card .badges{display:flex;gap:6px;flex-wrap:wrap;}

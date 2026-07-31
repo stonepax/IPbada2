@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>심판·소송 | IP바다</title>
+<meta name="description" content="대법원·특허법원 판례를 쟁점별 대분류·세부분류로 검색하고 원문을 다운로드하세요.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo"><span class="mark"></span>IP바다</a>
+    <nav class="main-nav">
+      <a href="resources.html">IP자료실</a>
+      <a href="index.html#filing">특허출원</a>
+      <a href="trial.html">심판·소송</a>
+      <a href="index.html#market">IP마켓</a>
+      <a href="jobs.html">구인구직</a>
+      <a href="community.html">커뮤니티</a>
+      <a href="news.html">글로벌 IP뉴스</a>
+    </nav>
+    <div class="header-actions" id="auth-actions">
+      <a class="btn btn-ghost" href="#login" data-auth-open="login">로그인</a>
+      <a class="btn btn-primary" href="#signup" data-auth-open="signup">무료 회원가입</a>
+      <button class="hamburger" aria-label="메뉴 열기"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal-box">
+    <button class="modal-close" id="auth-modal-close" type="button" aria-label="닫기">✕</button>
+    <div class="modal-tabs">
+      <button type="button" class="active" data-tab="login">로그인</button>
+      <button type="button" data-tab="signup">회원가입</button>
+    </div>
+    <form class="auth-form active" id="login-form" data-form="login">
+      <input type="email" name="email" placeholder="이메일" required>
+      <input type="password" name="password" placeholder="비밀번호" required>
+      <button type="submit" class="btn btn-primary">로그인</button>
+      <p class="auth-msg" id="login-msg"></p>
+    </form>
+    <form class="auth-form" id="signup-form" data-form="signup">
+      <input type="email" name="email" placeholder="이메일" required>
+      <input type="password" name="password" placeholder="비밀번호 (6자 이상)" required minlength="6">
+      <button type="submit" class="btn btn-primary">무료 회원가입</button>
+      <p class="auth-msg" id="signup-msg"></p>
+    </form>
+  </div>
+</div>
+
+<!-- 심판·소송: 판례 검색 -->
+<section class="section" id="top">
+  <div class="section-head">
+    <span class="eyebrow">심판·소송</span>
+    <h2>판례·심결례 검색</h2>
+    <p>대법원·특허법원 판례를 쟁점별 대분류·세부분류로 검색하고 원문을 다운로드하세요. 로그인한 회원만 열람하실 수 있습니다.</p>
+  </div>
+
+  <div class="filter-bar" id="collection-filter-wrap">
+    <select class="filter-select" id="collection-filter">
+      <option value="all">전체 출처</option>
+    </select>
+    <input type="text" class="search-input" id="search-input" placeholder="제목으로 검색">
+  </div>
+  <div class="filter-bar" id="category-filter"></div>
+
+  <div class="resource-grid" id="case-grid">
+    <p class="resource-empty">판례를 불러오는 중입니다...</p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="logo"><span class="mark"></span>IP바다</a>
+      <p>대한민국 IP 전문가를 위한 올인원 플랫폼. 판례·심결례부터 출원, 심판·소송, 마켓, 채용, 커뮤니티까지.</p>
+    </div>
+    <div>
+      <h5>IP자료실</h5>
+      <ul><li><a href="resources.html">전체 자료</a></li><li><a href="resources.html">성장단계별 자료</a></li></ul>
+    </div>
+    <div>
+      <h5>특허출원 · 심판</h5>
+      <ul><li><a href="index.html#filing">AI 명세서 생성</a></li><li><a href="index.html#filing">선행기술 검색</a></li><li><a href="trial.html">심판 진행 추적</a></li><li><a href="trial.html">전문가 연결</a></li></ul>
+    </div>
+    <div>
+      <h5>IP마켓 · 채용</h5>
+      <ul><li><a href="index.html#market">특허거래 마켓</a></li><li><a href="index.html#market">기술이전·라이선스</a></li><li><a href="jobs.html">변리사 채용</a></li><li><a href="jobs.html">프리랜서 마켓</a></li></ul>
+    </div>
+    <div>
+      <h5>회사 정보</h5>
+      <ul><li><a href="#">이용약관</a></li><li><a href="#">개인정보처리방침</a></li><li><a href="index.html#jobs-detail">제휴·광고 문의</a></li><li><a href="index.html#jobs-detail">고객센터</a></li></ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 IP바다(IPbada). All rights reserved.</span>
+    <span>본 사이트의 판례·법령 정보는 참고용이며 법적 효력을 갖지 않습니다.</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="app.js"></script>
+<script>
+  /* ---- 심판·소송: 판례 검색 (로그인 회원 전용, RLS로도 서버측에서 강제됨) ---- */
+  var allCaseLaw = [];
+  var currentMajor = 'all';
+
+  function bindCategoryFilterClicks(){
+    document.querySelectorAll('#category-filter .filter-pill').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        document.querySelectorAll('#category-filter .filter-pill').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentMajor = btn.dataset.category;
+        renderCaseLaw();
+      });
+    });
+  }
+
+  function buildDynamicFilters(){
+    var collections = Array.from(new Set(allCaseLaw.map(function(c){ return c.source_collection; })));
+    var collectionSelect = document.getElementById('collection-filter');
+    var prevCollection = collectionSelect.value;
+    collectionSelect.innerHTML = '<option value="all">전체 출처</option>' + collections.map(function(c){
+      return '<option value="' + escapeHtml(c) + '">' + escapeHtml(c) + '</option>';
+    }).join('');
+    collectionSelect.value = collections.indexOf(prevCollection) !== -1 ? prevCollection : 'all';
+
+    var majors = Array.from(new Set(allCaseLaw.map(function(c){ return c.major_category; })));
+    var majorBar = document.getElementById('category-filter');
+    majorBar.innerHTML = '<button type="button" class="filter-pill active" data-category="all">전체</button>' +
+      majors.map(function(m){
+        return '<button type="button" class="filter-pill" data-category="' + escapeHtml(m) + '">' + escapeHtml(m) + '</button>';
+      }).join('');
+    currentMajor = 'all';
+    bindCategoryFilterClicks();
+  }
+
+  function renderCaseLaw(){
+    var grid = document.getElementById('case-grid');
+    var query = document.getElementById('search-input').value.trim().toLowerCase();
+    var collection = document.getElementById('collection-filter').value;
+    var filtered = allCaseLaw.filter(function(c){
+      if(currentMajor !== 'all' && c.major_category !== currentMajor) return false;
+      if(collection !== 'all' && c.source_collection !== collection) return false;
+      if(query && c.title.toLowerCase().indexOf(query) === -1) return false;
+      return true;
+    });
+    if(filtered.length === 0){
+      grid.innerHTML = '<p class="resource-empty">조건에 맞는 판례가 없습니다.</p>';
+      return;
+    }
+    grid.innerHTML = filtered.map(function(c){
+      var subBadge = c.sub_category ? '<span class="resource-badge stage">' + escapeHtml(c.sub_category) + '</span>' : '';
+      var caseNumber = c.case_number ? '<p style="font-size:12.5px;color:var(--muted);">사건번호: ' + escapeHtml(c.case_number) + '</p>' : '';
+      var decisionDate = c.decision_date ? '<p style="font-size:12.5px;color:var(--muted);">선고일: ' + escapeHtml(c.decision_date) + '</p>' : '';
+      return '' +
+        '<div class="resource-card">' +
+          '<div class="badges"><span class="resource-badge">' + escapeHtml(c.source_collection) + '</span>' +
+            '<span class="resource-badge">' + escapeHtml(c.major_category) + '</span>' + subBadge + '</div>' +
+          '<h4>' + escapeHtml(c.title) + '</h4>' +
+          caseNumber + decisionDate +
+          '<a class="dl download-case" href="#" data-path="' + escapeHtml(c.original_file_path) + '">다운로드 →</a>' +
+        '</div>';
+    }).join('');
+  }
+
+  async function loadCaseLaw(){
+    var grid = document.getElementById('case-grid');
+    if(!supabaseClient){
+      grid.innerHTML = '<p class="resource-empty">서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.</p>';
+      return;
+    }
+    if(!currentSession){
+      grid.innerHTML = '<p class="resource-empty">판례 자료는 로그인한 회원만 열람하실 수 있습니다. <a href="#login" data-auth-open="login" style="color:var(--blue);font-weight:700;">로그인하기</a></p>';
+      document.getElementById('collection-filter-wrap').style.display = 'none';
+      document.getElementById('category-filter').style.display = 'none';
+      return;
+    }
+    document.getElementById('collection-filter-wrap').style.display = 'flex';
+    document.getElementById('category-filter').style.display = 'flex';
+
+    var result = await supabaseClient.from('case_law').select('*').order('created_at', { ascending: false });
+    if(result.error){
+      grid.innerHTML = '<p class="resource-empty">판례를 불러오지 못했습니다: ' + escapeHtml(result.error.message) + '</p>';
+      return;
+    }
+    allCaseLaw = result.data || [];
+    buildDynamicFilters();
+    renderCaseLaw();
+  }
+
+  document.getElementById('search-input').addEventListener('input', renderCaseLaw);
+  document.getElementById('collection-filter').addEventListener('change', renderCaseLaw);
+
+  document.getElementById('case-grid').addEventListener('click', async function(e){
+    var link = e.target.closest('.download-case');
+    if(!link) return;
+    e.preventDefault();
+    var originalText = link.textContent;
+    link.textContent = '준비 중...';
+    var signed = await supabaseClient.storage.from('case-law').createSignedUrl(link.dataset.path, 300);
+    if(signed.error || !signed.data){
+      link.textContent = '다운로드 실패';
+      setTimeout(function(){ link.textContent = originalText; }, 2000);
+      return;
+    }
+    window.open(signed.data.signedUrl, '_blank');
+    link.textContent = originalText;
+  });
+
+  if(supabaseClient){
+    supabaseClient.auth.onAuthStateChange(function(){ loadCaseLaw(); });
+    supabaseClient.auth.getSession().then(function(){ loadCaseLaw(); });
+  } else {
+    loadCaseLaw();
+  }
+</script>
+
+</body>
+</html>
