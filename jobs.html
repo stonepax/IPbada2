@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>구인구직 | IP바다</title>
+<meta name="description" content="변리사·명세사·도면사·번역사 등 IP 전문 인력 채용 게시판. 지원자가 직접 지원하고, 채용사가 직접 연락하는 방식으로 운영됩니다.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo"><span class="mark"></span>IP바다</a>
+    <nav class="main-nav">
+      <a href="resources.html">IP자료실</a>
+      <a href="index.html#filing">특허출원</a>
+      <a href="index.html#trial">심판·소송</a>
+      <a href="index.html#market">IP마켓</a>
+      <a href="jobs.html">구인구직</a>
+      <a href="community.html">커뮤니티</a>
+      <a href="news.html">글로벌 IP뉴스</a>
+    </nav>
+    <div class="header-actions" id="auth-actions">
+      <a class="btn btn-ghost" href="#login" data-auth-open="login">로그인</a>
+      <a class="btn btn-primary" href="#signup" data-auth-open="signup">무료 회원가입</a>
+      <button class="hamburger" aria-label="메뉴 열기"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal-box">
+    <button class="modal-close" id="auth-modal-close" type="button" aria-label="닫기">✕</button>
+    <div class="modal-tabs">
+      <button type="button" class="active" data-tab="login">로그인</button>
+      <button type="button" data-tab="signup">회원가입</button>
+    </div>
+    <form class="auth-form active" id="login-form" data-form="login">
+      <input type="email" name="email" placeholder="이메일" required>
+      <input type="password" name="password" placeholder="비밀번호" required>
+      <button type="submit" class="btn btn-primary">로그인</button>
+      <p class="auth-msg" id="login-msg"></p>
+    </form>
+    <form class="auth-form" id="signup-form" data-form="signup">
+      <input type="email" name="email" placeholder="이메일" required>
+      <input type="password" name="password" placeholder="비밀번호 (6자 이상)" required minlength="6">
+      <button type="submit" class="btn btn-primary">무료 회원가입</button>
+      <p class="auth-msg" id="signup-msg"></p>
+    </form>
+  </div>
+</div>
+
+<!-- 구인구직 -->
+<section class="section" id="top">
+  <div class="section-head">
+    <span class="eyebrow">구인구직</span>
+    <h2>IP 전문 채용 게시판</h2>
+    <p>변리사·명세사·도면사·번역사 등 IP 전문 인력 채용 공고입니다. 지원자가 직접 지원하면 채용사가 이력서/연락처를 확인 후 직접 연락합니다.</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px;">
+      <button type="button" id="post-toggle" class="btn btn-dark">+ 공고 등록하기</button>
+      <button type="button" id="my-applications-toggle" class="btn btn-ghost" style="display:none;">내 지원 내역</button>
+      <button type="button" id="my-postings-toggle" class="btn btn-ghost" style="display:none;">내 공고 관리</button>
+      <button type="button" id="job-approve-toggle" class="btn btn-dark" style="display:none;">승인 대기 보기</button>
+    </div>
+  </div>
+
+  <div class="job-post-panel" id="post-panel" style="display:none;">
+    <form id="post-form">
+      <div class="form-row">
+        <select name="poster_type" required>
+          <option value="">게시자 유형</option>
+          <option value="법인">법인(특허사무소·기업)</option>
+          <option value="개인">개인(1인 변리사 등)</option>
+        </select>
+        <input type="text" name="company_name" placeholder="회사/사무소명" required>
+      </div>
+      <input type="text" name="title" placeholder="공고 제목 (예: 특허 명세사 2년차 이상 채용)" required style="margin-bottom:14px;">
+      <div class="form-row">
+        <select name="job_category" required>
+          <option value="">직군 선택</option>
+          <option value="변리사">변리사</option>
+          <option value="명세사">명세사</option>
+          <option value="도면사">도면사</option>
+          <option value="번역사">번역사</option>
+          <option value="사무보조">사무보조</option>
+          <option value="기타">기타</option>
+        </select>
+        <select name="employment_type" required>
+          <option value="">고용 형태</option>
+          <option value="정규직">정규직</option>
+          <option value="계약직">계약직</option>
+          <option value="프리랜서">프리랜서(건별)</option>
+          <option value="파트타임">파트타임</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <input type="text" name="location" placeholder="근무지 (예: 서울 강남구)">
+        <input type="text" name="salary_range" placeholder="급여/단가 (선택, 공개하지 않아도 됨)">
+      </div>
+      <textarea name="description" placeholder="채용 상세 내용을 입력해주세요" required></textarea>
+      <textarea name="requirements" placeholder="자격 요건·우대사항 (선택)"></textarea>
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">
+        ※ 채용절차법에 따라 공고에 성별·연령·외모 등을 제한하는 문구는 넣을 수 없습니다. 등록된 공고는 관리자 검수 후 게시됩니다.
+      </p>
+      <button type="submit" class="btn btn-primary">공고 등록</button>
+      <p class="form-msg" id="post-msg"></p>
+    </form>
+  </div>
+
+  <div class="admin-upload-panel" id="job-approve-panel" style="display:none;max-width:820px;">
+    <div id="job-approve-list"></div>
+  </div>
+
+  <div class="job-mgmt-panel" id="my-applications-panel" style="display:none;">
+    <div id="my-applications-list"></div>
+  </div>
+
+  <div class="job-mgmt-panel" id="my-postings-panel" style="display:none;">
+    <div id="my-postings-list"></div>
+  </div>
+
+  <div class="filter-bar" id="category-filter">
+    <button type="button" class="filter-pill active" data-category="all">전체</button>
+    <button type="button" class="filter-pill" data-category="변리사">변리사</button>
+    <button type="button" class="filter-pill" data-category="명세사">명세사</button>
+    <button type="button" class="filter-pill" data-category="도면사">도면사</button>
+    <button type="button" class="filter-pill" data-category="번역사">번역사</button>
+    <button type="button" class="filter-pill" data-category="사무보조">사무보조</button>
+    <button type="button" class="filter-pill" data-category="기타">기타</button>
+  </div>
+  <div class="filter-bar">
+    <select class="filter-select" id="employment-filter">
+      <option value="all">전체 고용형태</option>
+      <option value="정규직">정규직</option>
+      <option value="계약직">계약직</option>
+      <option value="프리랜서">프리랜서(건별)</option>
+      <option value="파트타임">파트타임</option>
+    </select>
+  </div>
+
+  <div class="resource-grid" id="job-grid">
+    <p class="resource-empty">공고를 불러오는 중입니다...</p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="logo"><span class="mark"></span>IP바다</a>
+      <p>대한민국 IP 전문가를 위한 올인원 플랫폼. 판례·심결례부터 출원, 심판·소송, 마켓, 채용, 커뮤니티까지.</p>
+    </div>
+    <div>
+      <h5>IP자료실</h5>
+      <ul><li><a href="resources.html">전체 자료</a></li><li><a href="resources.html">성장단계별 자료</a></li></ul>
+    </div>
+    <div>
+      <h5>특허출원 · 심판</h5>
+      <ul><li><a href="index.html#filing">AI 명세서 생성</a></li><li><a href="index.html#filing">선행기술 검색</a></li><li><a href="index.html#trial">심판 진행 추적</a></li><li><a href="index.html#trial">전문가 연결</a></li></ul>
+    </div>
+    <div>
+      <h5>IP마켓 · 채용</h5>
+      <ul><li><a href="index.html#market">특허거래 마켓</a></li><li><a href="index.html#market">기술이전·라이선스</a></li><li><a href="jobs.html">변리사 채용</a></li><li><a href="jobs.html">프리랜서 마켓</a></li></ul>
+    </div>
+    <div>
+      <h5>회사 정보</h5>
+      <ul><li><a href="#">이용약관</a></li><li><a href="#">개인정보처리방침</a></li><li><a href="index.html#jobs-detail">제휴·광고 문의</a></li><li><a href="index.html#jobs-detail">고객센터</a></li></ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 IP바다(IPbada). All rights reserved.</span>
+    <span>본 게시판은 구인·구직 연결 통로만 제공하며, 채용 매칭·알선에 직접 개입하지 않습니다.</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="app.js"></script>
+<script>
+  /* ---- Jobs board: public listing + post + apply + manage ---- */
+  var allJobs = [];
+  var myAppliedPostingIds = {};
+  var currentCategory = 'all';
+
+  function formatDate(iso){
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return '';
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '.' + mm + '.' + dd;
+  }
+
+  function renderJobs(){
+    var grid = document.getElementById('job-grid');
+    var employment = document.getElementById('employment-filter').value;
+    var filtered = allJobs.filter(function(j){
+      if(currentCategory !== 'all' && j.job_category !== currentCategory) return false;
+      if(employment !== 'all' && j.employment_type !== employment) return false;
+      return true;
+    });
+    if(filtered.length === 0){
+      grid.innerHTML = '<p class="resource-empty">조건에 맞는 공고가 아직 없습니다.</p>';
+      return;
+    }
+    grid.innerHTML = filtered.map(function(j){
+      var applied = !!myAppliedPostingIds[j.id];
+      var salary = j.salary_range ? '<span class="resource-badge">' + escapeHtml(j.salary_range) + '</span>' : '';
+      var location = j.location ? '<p style="font-size:12.5px;color:var(--muted);">📍 ' + escapeHtml(j.location) + '</p>' : '';
+      var requirements = j.requirements ? '<p style="font-size:12.5px;color:var(--muted);">자격요건: ' + escapeHtml(j.requirements) + '</p>' : '';
+      var applyArea = applied
+        ? '<p class="job-applied-label">✓ 지원완료</p>'
+        : '<button type="button" class="btn btn-primary job-apply-toggle" data-posting-id="' + j.id + '" style="width:100%;">지원하기</button>' +
+          '<form class="job-apply-form" data-posting-id="' + j.id + '" style="display:none;">' +
+            '<input type="email" name="contact_email" placeholder="연락받을 이메일" required>' +
+            '<input type="tel" name="contact_phone" placeholder="연락처(선택)">' +
+            '<textarea name="message" placeholder="간단한 지원 메시지(선택)"></textarea>' +
+            '<input type="file" name="resume" accept=".pdf,.doc,.docx,.hwp">' +
+            '<button type="submit" class="btn btn-primary">지원서 제출</button>' +
+            '<p class="form-msg"></p>' +
+          '</form>';
+      return '' +
+        '<div class="resource-card">' +
+          '<div class="badges"><span class="resource-badge">' + escapeHtml(j.job_category) + '</span>' +
+            '<span class="resource-badge stage">' + escapeHtml(j.employment_type) + '</span>' +
+            '<span class="resource-badge stage">' + escapeHtml(j.poster_type) + '</span>' + salary + '</div>' +
+          '<h4>' + escapeHtml(j.title) + '</h4>' +
+          '<p style="font-size:12.5px;color:var(--muted);">' + escapeHtml(j.company_name) + '</p>' +
+          location +
+          '<p>' + escapeHtml(j.description) + '</p>' +
+          requirements +
+          applyArea +
+        '</div>';
+    }).join('');
+  }
+
+  async function loadMyApplications(){
+    myAppliedPostingIds = {};
+    if(!supabaseClient || !currentSession) return;
+    var result = await supabaseClient.from('applications').select('posting_id').eq('candidate_id', currentSession.user.id);
+    if(!result.error){
+      (result.data || []).forEach(function(a){ myAppliedPostingIds[a.posting_id] = true; });
+    }
+  }
+
+  async function loadJobs(){
+    var grid = document.getElementById('job-grid');
+    if(!supabaseClient){
+      grid.innerHTML = '<p class="resource-empty">서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.</p>';
+      return;
+    }
+    var result = await supabaseClient.from('job_postings').select('*').eq('status', 'published').order('created_at', { ascending: false });
+    if(result.error){
+      grid.innerHTML = '<p class="resource-empty">공고를 불러오지 못했습니다: ' + escapeHtml(result.error.message) + '</p>';
+      return;
+    }
+    allJobs = result.data || [];
+    await loadMyApplications();
+    renderJobs();
+  }
+  loadJobs();
+
+  document.querySelectorAll('#category-filter .filter-pill').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#category-filter .filter-pill').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentCategory = btn.dataset.category;
+      renderJobs();
+    });
+  });
+  document.getElementById('employment-filter').addEventListener('change', renderJobs);
+
+  /* ---- 공고 등록 ---- */
+  document.getElementById('post-toggle').addEventListener('click', function(){
+    if(!currentSession){ openAuthModal('login'); return; }
+    var panel = document.getElementById('post-panel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  });
+
+  document.getElementById('post-form').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var form = e.target;
+    var msg = document.getElementById('post-msg');
+    if(!supabaseClient){ msg.textContent = '서비스 연결에 실패했습니다.'; msg.className = 'form-msg error'; return; }
+    if(!currentSession){ openAuthModal('login'); return; }
+
+    var btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true; btn.textContent = '등록 중...';
+    var result = await supabaseClient.from('job_postings').insert({
+      posted_by: currentSession.user.id,
+      poster_type: form.poster_type.value,
+      company_name: form.company_name.value,
+      title: form.title.value,
+      job_category: form.job_category.value,
+      employment_type: form.employment_type.value,
+      location: form.location.value,
+      salary_range: form.salary_range.value,
+      description: form.description.value,
+      requirements: form.requirements.value
+    });
+    if(result.error){
+      msg.textContent = '등록 실패: ' + result.error.message;
+      msg.className = 'form-msg error';
+    } else {
+      msg.textContent = '공고가 등록되었습니다. 관리자 검수 후 게시됩니다.';
+      msg.className = 'form-msg success';
+      form.reset();
+      loadMyPostings();
+    }
+    btn.disabled = false; btn.textContent = '공고 등록';
+  });
+
+  /* ---- 지원하기 (지원 폼 토글 + 제출) ---- */
+  document.getElementById('job-grid').addEventListener('click', function(e){
+    var toggleBtn = e.target.closest('.job-apply-toggle');
+    if(!toggleBtn) return;
+    if(!currentSession){ openAuthModal('login'); return; }
+    var form = document.querySelector('.job-apply-form[data-posting-id="' + toggleBtn.dataset.postingId + '"]');
+    if(form){
+      if(!form.querySelector('[name="contact_email"]').value){
+        form.querySelector('[name="contact_email"]').value = currentSession.user.email;
+      }
+      form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+    }
+  });
+
+  document.getElementById('job-grid').addEventListener('submit', async function(e){
+    var form = e.target.closest('.job-apply-form');
+    if(!form) return;
+    e.preventDefault();
+    if(!supabaseClient) return;
+    if(!currentSession){ openAuthModal('login'); return; }
+
+    var postingId = form.dataset.postingId;
+    var msg = form.querySelector('.form-msg');
+    var btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true; btn.textContent = '제출 중...';
+    msg.textContent = ''; msg.className = 'form-msg';
+
+    var resumeFilePath = null;
+    var file = form.resume.files[0];
+    if(file){
+      resumeFilePath = currentSession.user.id + '/' + Date.now() + '-' + file.name;
+      var uploadResult = await supabaseClient.storage.from('resumes').upload(resumeFilePath, file);
+      if(uploadResult.error){
+        msg.textContent = '이력서 업로드 실패: ' + uploadResult.error.message;
+        msg.className = 'form-msg error';
+        btn.disabled = false; btn.textContent = '지원서 제출';
+        return;
+      }
+    }
+
+    var result = await supabaseClient.from('applications').insert({
+      posting_id: postingId,
+      candidate_id: currentSession.user.id,
+      contact_email: form.contact_email.value,
+      contact_phone: form.contact_phone.value,
+      message: form.message.value,
+      resume_file_path: resumeFilePath
+    });
+    if(result.error){
+      msg.textContent = '지원 실패: ' + result.error.message;
+      msg.className = 'form-msg error';
+      btn.disabled = false; btn.textContent = '지원서 제출';
+    } else {
+      myAppliedPostingIds[postingId] = true;
+      renderJobs();
+    }
+  });
+
+  /* ---- 내 지원 내역 ---- */
+  document.getElementById('my-applications-toggle').addEventListener('click', function(){
+    var panel = document.getElementById('my-applications-panel');
+    var opening = panel.style.display === 'none';
+    panel.style.display = opening ? 'block' : 'none';
+    if(opening) loadMyApplicationsPanel();
+  });
+
+  async function loadMyApplicationsPanel(){
+    var list = document.getElementById('my-applications-list');
+    list.innerHTML = '<p class="resource-empty">불러오는 중...</p>';
+    var result = await supabaseClient.from('applications')
+      .select('*, job_postings(title, company_name, job_category, status)')
+      .eq('candidate_id', currentSession.user.id)
+      .order('applied_at', { ascending: false });
+    if(result.error || !result.data || result.data.length === 0){
+      list.innerHTML = '<p class="resource-empty">지원한 공고가 없습니다.</p>';
+      return;
+    }
+    list.innerHTML = result.data.map(function(a){
+      var jp = a.job_postings || {};
+      var statusLabel = { submitted: '지원완료', viewed: '열람됨', contacted: '연락받음', closed: '종료' }[a.status] || a.status;
+      var canWithdraw = a.status !== 'closed';
+      return '' +
+        '<div class="job-mgmt-item" data-application-id="' + a.id + '">' +
+          '<div class="meta">' + escapeHtml(jp.company_name || '') + ' · ' + escapeHtml(jp.job_category || '') + ' · ' + formatDate(a.applied_at) + '</div>' +
+          '<h4>' + escapeHtml(jp.title || '(삭제된 공고)') + '</h4>' +
+          '<div class="meta">진행 상태: ' + escapeHtml(statusLabel) + '</div>' +
+          (canWithdraw ? '<div class="actions"><button type="button" class="withdraw-application danger">지원 취소</button></div>' : '') +
+        '</div>';
+    }).join('');
+  }
+
+  document.getElementById('my-applications-list').addEventListener('click', async function(e){
+    var btn = e.target.closest('.withdraw-application');
+    if(!btn) return;
+    var item = e.target.closest('.job-mgmt-item');
+    btn.disabled = true;
+    await supabaseClient.from('applications').update({ status: 'closed' }).eq('id', item.dataset.applicationId);
+    loadMyApplicationsPanel();
+  });
+
+  /* ---- 내 공고 관리 ---- */
+  document.getElementById('my-postings-toggle').addEventListener('click', function(){
+    var panel = document.getElementById('my-postings-panel');
+    var opening = panel.style.display === 'none';
+    panel.style.display = opening ? 'block' : 'none';
+    if(opening) loadMyPostings();
+  });
+
+  async function loadMyPostings(){
+    var toggle = document.getElementById('my-postings-toggle');
+    if(!currentSession) return;
+    toggle.style.display = 'inline-block';
+    var list = document.getElementById('my-postings-list');
+    var result = await supabaseClient.from('job_postings').select('*').eq('posted_by', currentSession.user.id).order('created_at', { ascending: false });
+    if(result.error || !result.data || result.data.length === 0){
+      list.innerHTML = '<p class="resource-empty">등록한 공고가 없습니다.</p>';
+      return;
+    }
+    var statusLabel = { pending_review: '검수 대기', published: '게시중', rejected: '거부됨', closed: '마감' };
+    list.innerHTML = result.data.map(function(j){
+      var closeBtn = j.status === 'published' ? '<button type="button" class="close-posting danger">공고 마감</button>' : '';
+      return '' +
+        '<div class="job-mgmt-item" data-posting-id="' + j.id + '">' +
+          '<div class="meta">' + escapeHtml(j.job_category) + ' · ' + escapeHtml(j.employment_type) + ' · ' + formatDate(j.created_at) + '</div>' +
+          '<h4>' + escapeHtml(j.title) + '</h4>' +
+          '<div class="meta">상태: ' + escapeHtml(statusLabel[j.status] || j.status) + '</div>' +
+          '<div class="actions">' +
+            '<button type="button" class="toggle-applicants">지원자 목록 보기</button>' +
+            closeBtn +
+          '</div>' +
+          '<div class="applicants-area" style="display:none;"></div>' +
+        '</div>';
+    }).join('');
+  }
+
+  document.getElementById('my-postings-list').addEventListener('click', async function(e){
+    var item = e.target.closest('.job-mgmt-item');
+    if(!item) return;
+    var postingId = item.dataset.postingId;
+
+    if(e.target.closest('.close-posting')){
+      e.target.disabled = true;
+      await supabaseClient.from('job_postings').update({ status: 'closed' }).eq('id', postingId);
+      loadMyPostings();
+      return;
+    }
+
+    if(e.target.closest('.toggle-applicants')){
+      var area = item.querySelector('.applicants-area');
+      var opening = area.style.display === 'none';
+      area.style.display = opening ? 'block' : 'none';
+      if(opening) loadApplicantsFor(postingId, area);
+      return;
+    }
+
+    var statusBtn = e.target.closest('[data-application-status]');
+    if(statusBtn){
+      statusBtn.disabled = true;
+      await supabaseClient.from('applications').update({ status: statusBtn.dataset.applicationStatus }).eq('id', statusBtn.dataset.applicationId);
+      loadApplicantsFor(postingId, item.querySelector('.applicants-area'));
+    }
+  });
+
+  async function loadApplicantsFor(postingId, area){
+    area.innerHTML = '<p class="resource-empty">불러오는 중...</p>';
+    var result = await supabaseClient.from('applications').select('*').eq('posting_id', postingId).order('applied_at', { ascending: false });
+    if(result.error || !result.data || result.data.length === 0){
+      area.innerHTML = '<p class="resource-empty">아직 지원자가 없습니다.</p>';
+      return;
+    }
+    var statusLabel = { submitted: '지원완료', viewed: '열람함', contacted: '연락함', closed: '종료' };
+    var rows = await Promise.all(result.data.map(async function(a){
+      var resumeLink = '';
+      if(a.resume_file_path){
+        var signed = await supabaseClient.storage.from('resumes').createSignedUrl(a.resume_file_path, 3600);
+        if(signed.data && signed.data.signedUrl){
+          resumeLink = '<a href="' + signed.data.signedUrl + '" target="_blank" rel="noopener">이력서 다운로드 →</a><br>';
+        }
+      }
+      var actions = ['submitted','viewed','contacted'].filter(function(s){ return s !== a.status; }).map(function(s){
+        return '<button type="button" data-application-id="' + a.id + '" data-application-status="' + s + '">' + statusLabel[s] + '(으)로 표시</button>';
+      }).join('');
+      return '' +
+        '<div class="job-applicant-item">' +
+          '<div>지원일: ' + formatDate(a.applied_at) + ' · 상태: ' + escapeHtml(statusLabel[a.status] || a.status) + '</div>' +
+          '<div>연락처: ' + escapeHtml(a.contact_email) + (a.contact_phone ? ' / ' + escapeHtml(a.contact_phone) : '') + '</div>' +
+          (a.message ? '<div>메시지: ' + escapeHtml(a.message) + '</div>' : '') +
+          resumeLink +
+          '<div class="actions">' + actions + '</div>' +
+        '</div>';
+    }));
+    area.innerHTML = rows.join('');
+  }
+
+  /* ---- 관리자 승인 대기 큐 (news.html과 동일한 패턴) ---- */
+  async function loadJobApprovalQueue(){
+    var toggle = document.getElementById('job-approve-toggle');
+    if(!supabaseClient || !currentSession || currentSession.user.email !== ADMIN_EMAIL){
+      toggle.style.display = 'none';
+      return;
+    }
+    var result = await supabaseClient.from('job_postings').select('*').eq('status', 'pending_review').order('created_at', { ascending: false });
+    var list = document.getElementById('job-approve-list');
+    if(result.error || !result.data || result.data.length === 0){
+      toggle.style.display = 'none';
+      list.innerHTML = '';
+      document.getElementById('job-approve-panel').style.display = 'none';
+      return;
+    }
+    toggle.style.display = 'inline-block';
+    toggle.textContent = '승인 대기 ' + result.data.length + '건 보기';
+    list.innerHTML = result.data.map(function(j){
+      return '' +
+        '<div class="news-approve-item" data-id="' + j.id + '">' +
+          '<div class="orig">' + escapeHtml(j.company_name) + ' · ' + escapeHtml(j.poster_type) + ' · ' + escapeHtml(j.job_category) + ' · ' + escapeHtml(j.employment_type) + '</div>' +
+          '<h4>' + escapeHtml(j.title) + '</h4>' +
+          '<p>' + escapeHtml(j.description) + '</p>' +
+          (j.requirements ? '<p class="news-relevance">자격요건: ' + escapeHtml(j.requirements) + '</p>' : '') +
+          '<div class="news-approve-actions">' +
+            '<button type="button" class="approve">승인 · 게시</button>' +
+            '<button type="button" class="reject">거부</button>' +
+          '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  document.getElementById('job-approve-toggle').addEventListener('click', function(){
+    var panel = document.getElementById('job-approve-panel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  });
+
+  document.getElementById('job-approve-list').addEventListener('click', async function(e){
+    var btn = e.target.closest('button');
+    if(!btn) return;
+    var item = e.target.closest('.news-approve-item');
+    var id = item.dataset.id;
+    btn.disabled = true;
+    if(btn.classList.contains('approve')){
+      await supabaseClient.from('job_postings').update({ status: 'published' }).eq('id', id);
+    } else {
+      await supabaseClient.from('job_postings').update({ status: 'rejected' }).eq('id', id);
+    }
+    loadJobApprovalQueue();
+    loadJobs();
+  });
+
+  /* ---- 로그인 상태에 따라 내 지원내역/내 공고 버튼 노출 ---- */
+  function refreshJobsAuthUI(){
+    document.getElementById('my-applications-toggle').style.display = currentSession ? 'inline-block' : 'none';
+    document.getElementById('my-postings-toggle').style.display = currentSession ? 'inline-block' : 'none';
+    if(!currentSession){
+      document.getElementById('my-applications-panel').style.display = 'none';
+      document.getElementById('my-postings-panel').style.display = 'none';
+    }
+    loadJobApprovalQueue();
+    loadMyApplications().then(renderJobs);
+  }
+
+  if(supabaseClient){
+    supabaseClient.auth.onAuthStateChange(function(){ refreshJobsAuthUI(); });
+    supabaseClient.auth.getSession().then(function(){ refreshJobsAuthUI(); });
+  }
+</script>
+
+</body>
+</html>
