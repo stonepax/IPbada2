@@ -158,6 +158,8 @@
   var allPosts = [];
   var currentDomain = 'all';
   var postId = new URLSearchParams(window.location.search).get('post');
+  var myPosts = [];
+  var editingPostId = null;
 
   // Toast UI Editor는 용량이 커서(약 300KB) 일반 방문자에게는 안 불러오고,
   // 관리자로 로그인했을 때만 필요한 시점에 동적으로 불러온다 (아래 refreshBlogAuthUI 참고)
@@ -359,9 +361,35 @@
   document.getElementById('write-toggle').addEventListener('click', function(){
     var panel = document.getElementById('write-panel');
     var opening = panel.style.display === 'none';
+    if(opening){
+      // 이 버튼은 항상 "새 글 작성"이라, 혹시 수정 모드였다면 초기화한다
+      editingPostId = null;
+      document.getElementById('write-form').reset();
+      document.getElementById('write-form').querySelector('button[type="submit"]').textContent = '글 등록';
+      if(bodyEditor) bodyEditor.setHTML('');
+    }
     panel.style.display = opening ? 'block' : 'none';
     if(opening) ensureEditorLoaded(function(){});
   });
+
+  function startEditingPost(post){
+    var panel = document.getElementById('write-panel');
+    panel.style.display = 'block';
+    ensureEditorLoaded(function(){
+      var form = document.getElementById('write-form');
+      form.title.value = post.title || '';
+      form.summary.value = post.summary || '';
+      form.domain.value = post.domain || '';
+      form.querySelectorAll('.stage-checks input').forEach(function(cb){
+        cb.checked = (post.growth_stage || []).indexOf(cb.value) !== -1;
+      });
+      form.status.value = post.status;
+      bodyEditor.setHTML(post.body_html || escapeHtml(post.body || '').replace(/\n/g, '<br>'));
+      editingPostId = post.id;
+      form.querySelector('button[type="submit"]').textContent = '글 수정';
+      panel.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
 
   document.getElementById('write-form').addEventListener('submit', async function(e){
     e.preventDefault();
@@ -378,31 +406,48 @@
     var stages = Array.prototype.slice.call(form.querySelectorAll('.stage-checks input:checked')).map(function(cb){ return cb.value; });
     var status = form.status.value;
     var btn = form.querySelector('button[type="submit"]');
-    btn.disabled = true; btn.textContent = '등록 중...';
+    var isEditing = !!editingPostId;
+    btn.disabled = true; btn.textContent = isEditing ? '수정 중...' : '등록 중...';
 
-    var result = await supabaseClient.from('blog_posts').insert({
+    var payload = {
       title: form.title.value,
       summary: form.summary.value,
       body: plainText,
       body_html: cleanHtml,
       domain: form.domain.value || null,
       growth_stage: stages,
-      status: status,
-      author_email: currentSession.user.email,
-      published_at: status === 'published' ? new Date().toISOString() : null
-    });
+      status: status
+    };
+
+    var result;
+    if(isEditing){
+      // 이미 게시돼 있던 글이면 매번 수정한다고 게시일을 오늘로 밀지 않고,
+      // 비공개였다가 이번에 처음 게시로 바뀌는 경우에만 게시일을 새로 찍는다
+      var original = myPosts.find(function(p){ return p.id === editingPostId; });
+      if(status === 'published' && (!original || original.status !== 'published')){
+        payload.published_at = new Date().toISOString();
+      }
+      result = await supabaseClient.from('blog_posts').update(payload).eq('id', editingPostId);
+    } else {
+      payload.author_email = currentSession.user.email;
+      payload.published_at = status === 'published' ? new Date().toISOString() : null;
+      result = await supabaseClient.from('blog_posts').insert(payload);
+    }
+
     if(result.error){
-      msg.textContent = '등록 실패: ' + result.error.message;
+      msg.textContent = (isEditing ? '수정 실패: ' : '등록 실패: ') + result.error.message;
       msg.className = 'form-msg error';
     } else {
-      msg.textContent = '글이 등록되었습니다!';
+      msg.textContent = isEditing ? '글이 수정되었습니다!' : '글이 등록되었습니다!';
       msg.className = 'form-msg success';
       form.reset();
       bodyEditor.setHTML('');
+      editingPostId = null;
       loadBlogList();
       loadMgmtList();
     }
-    btn.disabled = false; btn.textContent = '글 등록';
+    btn.disabled = false;
+    btn.textContent = editingPostId ? '글 수정' : '글 등록';
   });
 
   /* ---- 관리자: 내 글 관리 (게시/비공개 전환, 삭제) ---- */
@@ -417,9 +462,11 @@
     var list = document.getElementById('mgmt-list');
     var result = await supabaseClient.from('blog_posts').select('*').order('created_at', { ascending: false });
     if(result.error || !result.data || result.data.length === 0){
+      myPosts = [];
       list.innerHTML = '<p class="resource-empty">등록한 글이 없습니다.</p>';
       return;
     }
+    myPosts = result.data;
     var statusLabel = { draft: '비공개', published: '게시중' };
     list.innerHTML = result.data.map(function(p){
       var toggleLabel = p.status === 'published' ? '비공개로 전환' : '게시하기';
@@ -428,6 +475,7 @@
           '<div class="meta">' + escapeHtml(p.domain || '') + ' · ' + formatDate(p.created_at) + ' · ' + statusLabel[p.status] + '</div>' +
           '<h4>' + escapeHtml(p.title) + '</h4>' +
           '<div class="actions">' +
+            '<button type="button" class="edit-post">수정</button>' +
             '<button type="button" class="toggle-status" data-target-status="' + (p.status === 'published' ? 'draft' : 'published') + '">' + toggleLabel + '</button>' +
             '<button type="button" class="delete-post danger">삭제</button>' +
           '</div>' +
@@ -439,6 +487,13 @@
     var item = e.target.closest('.job-mgmt-item');
     if(!item) return;
     var id = item.dataset.id;
+
+    var editBtn = e.target.closest('.edit-post');
+    if(editBtn){
+      var post = myPosts.find(function(p){ return p.id === id; });
+      if(post) startEditingPost(post);
+      return;
+    }
 
     var toggleBtn = e.target.closest('.toggle-status');
     if(toggleBtn){
