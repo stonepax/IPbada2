@@ -197,6 +197,21 @@
       .replace(/(^|[^*])\*([^*\s][^*]*?)\*(?!\*)/g, '$1<em>$2</em>');
   }
 
+  // AI로 초안을 쓴 뒤 붙여넣을 때 같이 딸려오는 인용 마커(예: <cite index="21-1">...</cite>)를 제거.
+  // 실제 태그로 붙는 경우와, 위지윅이 글자 그대로(이스케이프된 텍스트로) 받아들인 경우를 모두 처리.
+  // index="숫자-숫자" 속성이 이런 도구들의 공통 특징이라 그걸 표식으로 삼음(일반 글에는 거의 안 나오는 패턴).
+  function stripAiCitationArtifacts(html){
+    var patterns = [
+      /<([a-z]+)\b[^>]*\bindex="\d+-\d+"[^>]*>[\s\S]*?<\/\1>/gi,
+      /<[a-z]+\b[^>]*\bindex="\d+-\d+"[^>]*\/?>/gi,
+      /&lt;([a-z]+)\b[^&]*?\bindex="\d+-\d+"[^&]*?&gt;[\s\S]*?&lt;\/\1&gt;/gi,
+      /&lt;[a-z]+\b[^&]*?\bindex="\d+-\d+"[^&]*?&gt;/gi
+    ];
+    var result = html;
+    patterns.forEach(function(re){ result = result.replace(re, ''); });
+    return result;
+  }
+
   function formatDate(iso){
     var d = new Date(iso);
     if(isNaN(d.getTime())) return '';
@@ -289,7 +304,7 @@
     var domainBadge = p.domain ? '<span class="resource-badge">' + escapeHtml(p.domain) + '</span>' : '';
     // body_html이 있으면 서식 있는 글(다시 한 번 살균해서 렌더링), 없으면(과거 글) 순수 텍스트로 표시
     var bodyContent = p.body_html
-      ? DOMPurify.sanitize(p.body_html)
+      ? stripAiCitationArtifacts(DOMPurify.sanitize(p.body_html))
       : escapeHtml(p.body || '').replace(/\n/g, '<br>');
 
     content.innerHTML =
@@ -351,7 +366,7 @@
     if(!bodyEditor){ msg.textContent = '에디터가 아직 준비 중입니다. 잠시 후 다시 시도해주세요.'; msg.className = 'form-msg error'; return; }
 
     var rawHtml = fixLeftoverMarkdown(bodyEditor.getHTML());
-    var cleanHtml = DOMPurify.sanitize(rawHtml);
+    var cleanHtml = stripAiCitationArtifacts(DOMPurify.sanitize(rawHtml));
     var plainText = cleanHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     if(!plainText){ msg.textContent = '본문을 입력해주세요.'; msg.className = 'form-msg error'; return; }
 
