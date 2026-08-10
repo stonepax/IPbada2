@@ -247,6 +247,25 @@ nav.main-nav a:hover{color:var(--blue);}
 .news-approve-actions .reject{background:#fdecea;color:#d92d20;}
 .news-relevance{font-size:12px;color:var(--muted);margin-bottom:10px;}
 
+/* ===== Blog ===== */
+.blog-write-panel{max-width:720px;margin:0 auto 24px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:28px;}
+.blog-write-panel input[type="text"],
+.blog-write-panel select,
+.blog-write-panel textarea{
+  width:100%;border:1px solid var(--border);border-radius:9px;padding:11px 14px;font-size:14px;font-family:inherit;margin-bottom:14px;
+}
+.blog-write-panel textarea{min-height:90px;resize:vertical;}
+.blog-write-panel textarea[name="body"]{min-height:280px;}
+.blog-write-panel button{width:100%;}
+
+.blog-detail{max-width:720px;margin:0 auto;}
+.blog-detail .back-link{display:inline-block;margin-bottom:20px;font-size:13.5px;font-weight:700;color:var(--blue);}
+.blog-detail .meta{font-size:12.5px;color:var(--muted);margin-bottom:10px;}
+.blog-detail h2{font-size:clamp(22px,3vw,28px);margin-bottom:16px;}
+.blog-detail .body{font-size:15px;color:var(--text);white-space:pre-wrap;line-height:1.8;margin-bottom:36px;}
+.blog-related{border-top:1px solid var(--border);padding-top:24px;}
+.blog-related h5{font-size:14.5px;color:var(--navy);margin-bottom:14px;}
+
 /* ===== Jobs board ===== */
 .job-post-panel{max-width:640px;margin:0 auto 24px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:28px;}
 .job-post-panel input,.job-post-panel select,.job-post-panel textarea{
