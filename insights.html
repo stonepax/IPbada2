@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>인사이트 | IP바다</title>
+<meta name="description" content="IP바다 블로그와 글로벌 IP뉴스 — 스타트업을 위한 IP 콘텐츠 허브입니다.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo"><span class="mark"></span>IP바다</a>
+    <nav class="main-nav">
+      <a href="resources.html">IP자료실</a>
+      <a href="index.html#filing">특허출원</a>
+      <a href="trial.html">심판·소송</a>
+      <a href="insights.html">인사이트</a>
+      <a href="index.html#market">IP마켓</a>
+      <a href="jobs.html">구인구직</a>
+      <a href="community.html">커뮤니티</a>
+    </nav>
+    <div class="header-actions" id="auth-actions">
+      <a class="btn btn-ghost" href="#login" data-auth-open="login">로그인</a>
+      <a class="btn btn-primary" href="#signup" data-auth-open="signup">무료 회원가입</a>
+      <button class="hamburger" aria-label="메뉴 열기"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal-box">
+    <button class="modal-close" id="auth-modal-close" type="button" aria-label="닫기">✕</button>
+    <div class="modal-tabs">
+      <button type="button" class="active" data-tab="login">로그인</button>
+      <button type="button" data-tab="signup">회원가입</button>
+    </div>
+    <form class="auth-form active" id="login-form" data-form="login">
+      <input type="email" name="email" placeholder="이메일" required>
+      <input type="password" name="password" placeholder="비밀번호" required>
+      <button type="submit" class="btn btn-primary">로그인</button>
+      <p class="auth-msg" id="login-msg"></p>
+    </form>
+    <form class="auth-form" id="signup-form" data-form="signup">
+      <input type="email" name="email" placeholder="이메일" required>
+      <input type="password" name="password" placeholder="비밀번호 (6자 이상)" required minlength="6">
+      <button type="submit" class="btn btn-primary">무료 회원가입</button>
+      <p class="auth-msg" id="signup-msg"></p>
+    </form>
+  </div>
+</div>
+
+<!-- 인사이트: 블로그 + 글로벌 IP뉴스 허브 -->
+<section class="section" id="top">
+  <div class="section-head">
+    <span class="eyebrow">인사이트</span>
+    <h2>스타트업을 위한 IP 인사이트</h2>
+    <p>직접 쓴 콘텐츠와 큐레이션한 콘텐츠를 나눠서 보여드립니다.</p>
+  </div>
+
+  <div class="card-grid">
+    <a class="card" href="blog.html">
+      <div class="icon-box">✍️</div>
+      <h3>블로그</h3>
+      <p>대표가 직접 쓰는 IP 전략·실무 글입니다. 관련 IP자료실 자료도 함께 확인하세요.</p>
+      <span class="card-link">블로그 보기 →</span>
+    </a>
+    <a class="card" href="news.html">
+      <div class="icon-box">🌐</div>
+      <h3>글로벌 IP뉴스</h3>
+      <p>해외 IP 동향 중 한국 스타트업과 관련 있는 소식만 골라 큐레이션합니다.</p>
+      <span class="card-link">뉴스 보기 →</span>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="logo"><span class="mark"></span>IP바다</a>
+      <p>대한민국 IP 전문가를 위한 올인원 플랫폼. 판례·심결례부터 출원, 심판·소송, 마켓, 채용, 커뮤니티까지.</p>
+    </div>
+    <div>
+      <h5>IP자료실</h5>
+      <ul><li><a href="resources.html">전체 자료</a></li><li><a href="resources.html">성장단계별 자료</a></li></ul>
+    </div>
+    <div>
+      <h5>특허출원 · 심판</h5>
+      <ul><li><a href="index.html#filing">AI 명세서 생성</a></li><li><a href="index.html#filing">선행기술 검색</a></li><li><a href="trial.html">심판 진행 추적</a></li><li><a href="trial.html">전문가 연결</a></li></ul>
+    </div>
+    <div>
+      <h5>IP마켓 · 채용</h5>
+      <ul><li><a href="index.html#market">특허거래 마켓</a></li><li><a href="index.html#market">기술이전·라이선스</a></li><li><a href="jobs.html">변리사 채용</a></li><li><a href="jobs.html">프리랜서 마켓</a></li></ul>
+    </div>
+    <div>
+      <h5>회사 정보</h5>
+      <ul><li><a href="#">이용약관</a></li><li><a href="#">개인정보처리방침</a></li><li><a href="index.html#jobs-detail">제휴·광고 문의</a></li><li><a href="index.html#jobs-detail">고객센터</a></li></ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 IP바다(IPbada). All rights reserved.</span>
+    <span>본 사이트의 콘텐츠는 참고용이며 법적 효력을 갖지 않습니다.</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>

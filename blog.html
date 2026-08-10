@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>블로그 | IP바다</title>
+<meta name="description" content="대표가 직접 쓰는 IP 전략·실무 블로그입니다.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo"><span class="mark"></span>IP바다</a>
+    <nav class="main-nav">
+      <a href="resources.html">IP자료실</a>
+      <a href="index.html#filing">특허출원</a>
+      <a href="trial.html">심판·소송</a>
+      <a href="insights.html">인사이트</a>
+      <a href="index.html#market">IP마켓</a>
+      <a href="jobs.html">구인구직</a>
+      <a href="community.html">커뮤니티</a>
+    </nav>
+    <div class="header-actions" id="auth-actions">
+      <a class="btn btn-ghost" href="#login" data-auth-open="login">로그인</a>
+      <a class="btn btn-primary" href="#signup" data-auth-open="signup">무료 회원가입</a>
+      <button class="hamburger" aria-label="메뉴 열기"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal-box">
+    <button class="modal-close" id="auth-modal-close" type="button" aria-label="닫기">✕</button>
+    <div class="modal-tabs">
+      <button type="button" class="active" data-tab="login">로그인</button>
+      <button type="button" data-tab="signup">회원가입</button>
+    </div>
+    <form class="auth-form active" id="login-form" data-form="login">
+      <input type="email" name="email" placeholder="이메일" required>
+      <input type="password" name="password" placeholder="비밀번호" required>
+      <button type="submit" class="btn btn-primary">로그인</button>
+      <p class="auth-msg" id="login-msg"></p>
+    </form>
+    <form class="auth-form" id="signup-form" data-form="signup">
+      <input type="email" name="email" placeholder="이메일" required>
+      <input type="password" name="password" placeholder="비밀번호 (6자 이상)" required minlength="6">
+      <button type="submit" class="btn btn-primary">무료 회원가입</button>
+      <p class="auth-msg" id="signup-msg"></p>
+    </form>
+  </div>
+</div>
+
+<!-- 블로그: 목록 -->
+<section class="section" id="blog-list-view">
+  <div class="section-head">
+    <span class="eyebrow">인사이트 · 블로그</span>
+    <h2>IP바다 블로그</h2>
+    <p>대표가 직접 쓰는 IP 전략·실무 글입니다.</p>
+    <button type="button" id="write-toggle" class="btn btn-dark" style="display:none;margin-top:16px;">+ 새 글 작성</button>
+    <button type="button" id="mgmt-toggle" class="btn btn-ghost" style="display:none;margin-top:16px;margin-left:8px;">내 글 관리</button>
+  </div>
+
+  <div class="blog-write-panel" id="write-panel" style="display:none;">
+    <form id="write-form">
+      <input type="text" name="title" placeholder="제목" required>
+      <textarea name="summary" placeholder="한 줄 요약 (목록에 표시됩니다)"></textarea>
+      <select name="domain">
+        <option value="">분야 선택 (선택)</option>
+        <option value="특허">특허</option>
+        <option value="상표">상표</option>
+        <option value="디자인">디자인</option>
+        <option value="영업비밀">영업비밀</option>
+        <option value="정책">정책</option>
+      </select>
+      <div class="stage-checks" style="margin-bottom:14px;">
+        <label><input type="checkbox" value="아이디어/기획"> 아이디어/기획</label>
+        <label><input type="checkbox" value="제품개발/출시"> 제품개발/출시</label>
+        <label><input type="checkbox" value="투자유치/초기성장"> 투자유치/초기성장</label>
+        <label><input type="checkbox" value="확장/해외진출"> 확장/해외진출</label>
+        <label><input type="checkbox" value="엑싯 준비"> 엑싯 준비</label>
+      </div>
+      <textarea name="body" placeholder="본문 내용을 입력해주세요" required></textarea>
+      <select name="status">
+        <option value="published">바로 게시</option>
+        <option value="draft">임시저장(비공개)</option>
+      </select>
+      <button type="submit" class="btn btn-primary">글 등록</button>
+      <p class="form-msg" id="write-msg"></p>
+    </form>
+  </div>
+
+  <div class="job-mgmt-panel" id="mgmt-panel" style="display:none;">
+    <div id="mgmt-list"></div>
+  </div>
+
+  <div class="filter-bar" id="domain-filter">
+    <button type="button" class="filter-pill active" data-domain="all">전체</button>
+    <button type="button" class="filter-pill" data-domain="특허">특허</button>
+    <button type="button" class="filter-pill" data-domain="상표">상표</button>
+    <button type="button" class="filter-pill" data-domain="디자인">디자인</button>
+    <button type="button" class="filter-pill" data-domain="영업비밀">영업비밀</button>
+    <button type="button" class="filter-pill" data-domain="정책">정책</button>
+  </div>
+
+  <div class="resource-grid" id="blog-grid">
+    <p class="resource-empty">글을 불러오는 중입니다...</p>
+  </div>
+</section>
+
+<!-- 블로그: 상세 (?post=id 로 접근시) -->
+<section class="section" id="blog-detail-view" style="display:none;">
+  <div class="blog-detail" id="blog-detail-content"></div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="logo"><span class="mark"></span>IP바다</a>
+      <p>대한민국 IP 전문가를 위한 올인원 플랫폼. 판례·심결례부터 출원, 심판·소송, 마켓, 채용, 커뮤니티까지.</p>
+    </div>
+    <div>
+      <h5>IP자료실</h5>
+      <ul><li><a href="resources.html">전체 자료</a></li><li><a href="resources.html">성장단계별 자료</a></li></ul>
+    </div>
+    <div>
+      <h5>특허출원 · 심판</h5>
+      <ul><li><a href="index.html#filing">AI 명세서 생성</a></li><li><a href="index.html#filing">선행기술 검색</a></li><li><a href="trial.html">심판 진행 추적</a></li><li><a href="trial.html">전문가 연결</a></li></ul>
+    </div>
+    <div>
+      <h5>IP마켓 · 채용</h5>
+      <ul><li><a href="index.html#market">특허거래 마켓</a></li><li><a href="index.html#market">기술이전·라이선스</a></li><li><a href="jobs.html">변리사 채용</a></li><li><a href="jobs.html">프리랜서 마켓</a></li></ul>
+    </div>
+    <div>
+      <h5>회사 정보</h5>
+      <ul><li><a href="#">이용약관</a></li><li><a href="#">개인정보처리방침</a></li><li><a href="index.html#jobs-detail">제휴·광고 문의</a></li><li><a href="index.html#jobs-detail">고객센터</a></li></ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 IP바다(IPbada). All rights reserved.</span>
+    <span>본 사이트의 콘텐츠는 참고용이며 법적 효력을 갖지 않습니다.</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="app.js"></script>
+<script>
+  /* ---- Blog: list + detail + admin write/manage ---- */
+  var allPosts = [];
+  var currentDomain = 'all';
+  var postId = new URLSearchParams(window.location.search).get('post');
+
+  function formatDate(iso){
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return '';
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '.' + mm + '.' + dd;
+  }
+
+  // 자료실 category 값과 블로그 domain 값 이름이 완전히 같지 않아 최대한 매핑
+  function domainToResourceCategory(domain){
+    var map = {
+      '특허': '특허',
+      '상표': '상표·디자인',
+      '디자인': '상표·디자인',
+      '영업비밀': '계약·영업비밀',
+      '정책': '정부지원사업·자금조달'
+    };
+    return map[domain] || null;
+  }
+
+  function renderBlogList(){
+    var grid = document.getElementById('blog-grid');
+    var filtered = currentDomain === 'all' ? allPosts : allPosts.filter(function(p){ return p.domain === currentDomain; });
+    if(filtered.length === 0){
+      grid.innerHTML = '<p class="resource-empty">등록된 글이 아직 없습니다.</p>';
+      return;
+    }
+    grid.innerHTML = filtered.map(function(p){
+      var stageBadges = (p.growth_stage || []).map(function(s){
+        return '<span class="resource-badge stage">' + escapeHtml(s) + '</span>';
+      }).join('');
+      var domainBadge = p.domain ? '<span class="resource-badge">' + escapeHtml(p.domain) + '</span>' : '';
+      return '' +
+        '<a class="resource-card" href="blog.html?post=' + p.id + '" style="cursor:pointer;">' +
+          '<div class="badges">' + domainBadge + stageBadges + '</div>' +
+          '<h4>' + escapeHtml(p.title) + '</h4>' +
+          '<p>' + escapeHtml(p.summary || '') + '</p>' +
+          '<span class="dl">' + formatDate(p.published_at || p.created_at) + '</span>' +
+        '</a>';
+    }).join('');
+  }
+
+  async function loadBlogList(){
+    var grid = document.getElementById('blog-grid');
+    if(!supabaseClient){
+      grid.innerHTML = '<p class="resource-empty">서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.</p>';
+      return;
+    }
+    var result = await supabaseClient.from('blog_posts').select('*')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false });
+    if(result.error){
+      grid.innerHTML = '<p class="resource-empty">글을 불러오지 못했습니다: ' + escapeHtml(result.error.message) + '</p>';
+      return;
+    }
+    allPosts = result.data || [];
+    renderBlogList();
+  }
+
+  document.querySelectorAll('#domain-filter .filter-pill').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#domain-filter .filter-pill').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentDomain = btn.dataset.domain;
+      renderBlogList();
+    });
+  });
+
+  /* ---- 상세 보기 ---- */
+  async function loadBlogDetail(id){
+    document.getElementById('blog-list-view').style.display = 'none';
+    var detailSection = document.getElementById('blog-detail-view');
+    var content = document.getElementById('blog-detail-content');
+    detailSection.style.display = 'block';
+    content.innerHTML = '<p class="resource-empty">불러오는 중입니다...</p>';
+
+    if(!supabaseClient){
+      content.innerHTML = '<p class="resource-empty">서비스에 연결할 수 없습니다.</p>';
+      return;
+    }
+    var result = await supabaseClient.from('blog_posts').select('*').eq('id', id).single();
+    if(result.error || !result.data){
+      content.innerHTML = '<a class="back-link" href="blog.html">← 목록으로</a><p class="resource-empty">글을 찾을 수 없습니다.</p>';
+      return;
+    }
+    var p = result.data;
+    var stageBadges = (p.growth_stage || []).map(function(s){
+      return '<span class="resource-badge stage">' + escapeHtml(s) + '</span>';
+    }).join('');
+    var domainBadge = p.domain ? '<span class="resource-badge">' + escapeHtml(p.domain) + '</span>' : '';
+
+    content.innerHTML =
+      '<a class="back-link" href="blog.html">← 목록으로</a>' +
+      '<div class="badges" style="margin-bottom:14px;">' + domainBadge + stageBadges + '</div>' +
+      '<h2>' + escapeHtml(p.title) + '</h2>' +
+      '<div class="meta">' + formatDate(p.published_at || p.created_at) + '</div>' +
+      '<div class="body">' + escapeHtml(p.body) + '</div>' +
+      '<div class="blog-related" id="blog-related"></div>';
+
+    loadRelatedResources(p);
+  }
+
+  async function loadRelatedResources(post){
+    var wrap = document.getElementById('blog-related');
+    if(!supabaseClient) return;
+    var query = supabaseClient.from('resources').select('*').limit(3);
+    var category = domainToResourceCategory(post.domain);
+    if(category){
+      query = query.eq('category', category);
+    } else if(post.growth_stage && post.growth_stage.length > 0){
+      query = query.overlaps('growth_stage', post.growth_stage);
+    } else {
+      wrap.innerHTML = '';
+      return;
+    }
+    var result = await query;
+    if(result.error || !result.data || result.data.length === 0){
+      wrap.innerHTML = '';
+      return;
+    }
+    wrap.innerHTML = '<h5>관련 IP자료실 자료</h5>' +
+      '<div class="resource-grid" style="grid-template-columns:1fr;">' +
+      result.data.map(function(r){
+        return '' +
+          '<div class="resource-card">' +
+            '<div class="badges"><span class="resource-badge">' + escapeHtml(r.format) + '</span></div>' +
+            '<h4>' + escapeHtml(r.title) + '</h4>' +
+            '<p>' + escapeHtml(r.summary || '') + '</p>' +
+            '<a class="dl" href="resources.html">IP자료실에서 보기 →</a>' +
+          '</div>';
+      }).join('') +
+      '</div>';
+  }
+
+  /* ---- 관리자: 글 작성 ---- */
+  document.getElementById('write-toggle').addEventListener('click', function(){
+    var panel = document.getElementById('write-panel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  });
+
+  document.getElementById('write-form').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var form = e.target;
+    var msg = document.getElementById('write-msg');
+    if(!supabaseClient || !currentSession){ msg.textContent = '로그인이 필요합니다.'; msg.className = 'form-msg error'; return; }
+
+    var stages = Array.prototype.slice.call(form.querySelectorAll('.stage-checks input:checked')).map(function(cb){ return cb.value; });
+    var status = form.status.value;
+    var btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true; btn.textContent = '등록 중...';
+
+    var result = await supabaseClient.from('blog_posts').insert({
+      title: form.title.value,
+      summary: form.summary.value,
+      body: form.body.value,
+      domain: form.domain.value || null,
+      growth_stage: stages,
+      status: status,
+      author_email: currentSession.user.email,
+      published_at: status === 'published' ? new Date().toISOString() : null
+    });
+    if(result.error){
+      msg.textContent = '등록 실패: ' + result.error.message;
+      msg.className = 'form-msg error';
+    } else {
+      msg.textContent = '글이 등록되었습니다!';
+      msg.className = 'form-msg success';
+      form.reset();
+      loadBlogList();
+      loadMgmtList();
+    }
+    btn.disabled = false; btn.textContent = '글 등록';
+  });
+
+  /* ---- 관리자: 내 글 관리 (게시/비공개 전환, 삭제) ---- */
+  document.getElementById('mgmt-toggle').addEventListener('click', function(){
+    var panel = document.getElementById('mgmt-panel');
+    var opening = panel.style.display === 'none';
+    panel.style.display = opening ? 'block' : 'none';
+    if(opening) loadMgmtList();
+  });
+
+  async function loadMgmtList(){
+    var list = document.getElementById('mgmt-list');
+    var result = await supabaseClient.from('blog_posts').select('*').order('created_at', { ascending: false });
+    if(result.error || !result.data || result.data.length === 0){
+      list.innerHTML = '<p class="resource-empty">등록한 글이 없습니다.</p>';
+      return;
+    }
+    var statusLabel = { draft: '비공개', published: '게시중' };
+    list.innerHTML = result.data.map(function(p){
+      var toggleLabel = p.status === 'published' ? '비공개로 전환' : '게시하기';
+      return '' +
+        '<div class="job-mgmt-item" data-id="' + p.id + '">' +
+          '<div class="meta">' + escapeHtml(p.domain || '') + ' · ' + formatDate(p.created_at) + ' · ' + statusLabel[p.status] + '</div>' +
+          '<h4>' + escapeHtml(p.title) + '</h4>' +
+          '<div class="actions">' +
+            '<button type="button" class="toggle-status" data-target-status="' + (p.status === 'published' ? 'draft' : 'published') + '">' + toggleLabel + '</button>' +
+            '<button type="button" class="delete-post danger">삭제</button>' +
+          '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  document.getElementById('mgmt-list').addEventListener('click', async function(e){
+    var item = e.target.closest('.job-mgmt-item');
+    if(!item) return;
+    var id = item.dataset.id;
+
+    var toggleBtn = e.target.closest('.toggle-status');
+    if(toggleBtn){
+      toggleBtn.disabled = true;
+      var newStatus = toggleBtn.dataset.targetStatus;
+      var updates = { status: newStatus };
+      if(newStatus === 'published') updates.published_at = new Date().toISOString();
+      await supabaseClient.from('blog_posts').update(updates).eq('id', id);
+      loadMgmtList();
+      loadBlogList();
+      return;
+    }
+
+    var deleteBtn = e.target.closest('.delete-post');
+    if(deleteBtn){
+      if(!confirm('이 글을 삭제하시겠습니까?')) return;
+      deleteBtn.disabled = true;
+      await supabaseClient.from('blog_posts').delete().eq('id', id);
+      loadMgmtList();
+      loadBlogList();
+    }
+  });
+
+  /* ---- 로그인 상태에 따라 작성/관리 버튼 노출 (관리자만) ---- */
+  function refreshBlogAuthUI(){
+    var isAdmin = !!(currentSession && currentSession.user && currentSession.user.email === ADMIN_EMAIL);
+    document.getElementById('write-toggle').style.display = isAdmin ? 'inline-block' : 'none';
+    document.getElementById('mgmt-toggle').style.display = isAdmin ? 'inline-block' : 'none';
+    if(!isAdmin){
+      document.getElementById('write-panel').style.display = 'none';
+      document.getElementById('mgmt-panel').style.display = 'none';
+    }
+  }
+
+  if(postId){
+    loadBlogDetail(postId);
+  } else {
+    loadBlogList();
+  }
+
+  if(supabaseClient){
+    supabaseClient.auth.onAuthStateChange(function(){ refreshBlogAuthUI(); });
+    supabaseClient.auth.getSession().then(function(){ refreshBlogAuthUI(); });
+  }
+</script>
+
+</body>
+</html>
