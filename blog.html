@@ -88,7 +88,7 @@
         <label><input type="checkbox" value="확장/해외진출"> 확장/해외진출</label>
         <label><input type="checkbox" value="엑싯 준비"> 엑싯 준비</label>
       </div>
-      <textarea name="body" placeholder="본문 내용을 입력해주세요" required></textarea>
+      <div id="body-editor" style="margin-bottom:14px;"></div>
       <select name="status">
         <option value="published">바로 게시</option>
         <option value="draft">임시저장(비공개)</option>
@@ -151,12 +151,51 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 <script src="app.js"></script>
 <script>
   /* ---- Blog: list + detail + admin write/manage ---- */
   var allPosts = [];
   var currentDomain = 'all';
   var postId = new URLSearchParams(window.location.search).get('post');
+
+  // Toast UI Editor는 용량이 커서(약 300KB) 일반 방문자에게는 안 불러오고,
+  // 관리자로 로그인했을 때만 필요한 시점에 동적으로 불러온다 (아래 refreshBlogAuthUI 참고)
+  var bodyEditor = null;
+  var editorLoading = false;
+
+  function ensureEditorLoaded(callback){
+    if(bodyEditor){ callback(); return; }
+    if(editorLoading){ setTimeout(function(){ ensureEditorLoaded(callback); }, 200); return; }
+    editorLoading = true;
+
+    var cssLink = document.createElement('link');
+    cssLink.rel = 'stylesheet';
+    cssLink.href = 'https://uicdn.toast.com/editor/latest/toastui-editor.min.css';
+    document.head.appendChild(cssLink);
+
+    var script = document.createElement('script');
+    script.src = 'https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js';
+    script.onload = function(){
+      bodyEditor = new toastui.Editor({
+        el: document.getElementById('body-editor'),
+        height: '400px',
+        initialEditType: 'wysiwyg',
+        previewStyle: 'vertical',
+        placeholder: '본문 내용을 입력해주세요'
+      });
+      editorLoading = false;
+      callback();
+    };
+    document.body.appendChild(script);
+  }
+
+  // 위지윅에서 놓친 마크다운 문법(**굵게**, *기울임*)이 그대로 남는 경우를 대비한 보정
+  function fixLeftoverMarkdown(html){
+    return html
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/(^|[^*])\*([^*\s][^*]*?)\*(?!\*)/g, '$1<em>$2</em>');
+  }
 
   function formatDate(iso){
     var d = new Date(iso);
@@ -248,13 +287,17 @@
       return '<span class="resource-badge stage">' + escapeHtml(s) + '</span>';
     }).join('');
     var domainBadge = p.domain ? '<span class="resource-badge">' + escapeHtml(p.domain) + '</span>' : '';
+    // body_html이 있으면 서식 있는 글(다시 한 번 살균해서 렌더링), 없으면(과거 글) 순수 텍스트로 표시
+    var bodyContent = p.body_html
+      ? DOMPurify.sanitize(p.body_html)
+      : escapeHtml(p.body || '').replace(/\n/g, '<br>');
 
     content.innerHTML =
       '<a class="back-link" href="blog.html">← 목록으로</a>' +
       '<div class="badges" style="margin-bottom:14px;">' + domainBadge + stageBadges + '</div>' +
       '<h2>' + escapeHtml(p.title) + '</h2>' +
       '<div class="meta">' + formatDate(p.published_at || p.created_at) + '</div>' +
-      '<div class="body">' + escapeHtml(p.body) + '</div>' +
+      '<div class="body">' + bodyContent + '</div>' +
       '<div class="blog-related" id="blog-related"></div>';
 
     loadRelatedResources(p);
@@ -295,7 +338,9 @@
   /* ---- 관리자: 글 작성 ---- */
   document.getElementById('write-toggle').addEventListener('click', function(){
     var panel = document.getElementById('write-panel');
-    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    var opening = panel.style.display === 'none';
+    panel.style.display = opening ? 'block' : 'none';
+    if(opening) ensureEditorLoaded(function(){});
   });
 
   document.getElementById('write-form').addEventListener('submit', async function(e){
@@ -303,6 +348,12 @@
     var form = e.target;
     var msg = document.getElementById('write-msg');
     if(!supabaseClient || !currentSession){ msg.textContent = '로그인이 필요합니다.'; msg.className = 'form-msg error'; return; }
+    if(!bodyEditor){ msg.textContent = '에디터가 아직 준비 중입니다. 잠시 후 다시 시도해주세요.'; msg.className = 'form-msg error'; return; }
+
+    var rawHtml = fixLeftoverMarkdown(bodyEditor.getHTML());
+    var cleanHtml = DOMPurify.sanitize(rawHtml);
+    var plainText = cleanHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    if(!plainText){ msg.textContent = '본문을 입력해주세요.'; msg.className = 'form-msg error'; return; }
 
     var stages = Array.prototype.slice.call(form.querySelectorAll('.stage-checks input:checked')).map(function(cb){ return cb.value; });
     var status = form.status.value;
@@ -312,7 +363,8 @@
     var result = await supabaseClient.from('blog_posts').insert({
       title: form.title.value,
       summary: form.summary.value,
-      body: form.body.value,
+      body: plainText,
+      body_html: cleanHtml,
       domain: form.domain.value || null,
       growth_stage: stages,
       status: status,
@@ -326,6 +378,7 @@
       msg.textContent = '글이 등록되었습니다!';
       msg.className = 'form-msg success';
       form.reset();
+      bodyEditor.setHTML('');
       loadBlogList();
       loadMgmtList();
     }
