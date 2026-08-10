@@ -202,10 +202,15 @@
   // index="숫자-숫자" 속성이 이런 도구들의 공통 특징이라 그걸 표식으로 삼음(일반 글에는 거의 안 나오는 패턴).
   function stripAiCitationArtifacts(html){
     var patterns = [
+      // 짝이 맞는 경우 (내용까지 포함해서 제거) -- cite 외 다른 태그명도 대비
       /<([a-z]+)\b[^>]*\bindex="\d+-\d+"[^>]*>[\s\S]*?<\/\1>/gi,
       /<[a-z]+\b[^>]*\bindex="\d+-\d+"[^>]*\/?>/gi,
       /&lt;([a-z]+)\b[^&]*?\bindex="\d+-\d+"[^&]*?&gt;[\s\S]*?&lt;\/\1&gt;/gi,
-      /&lt;[a-z]+\b[^&]*?\bindex="\d+-\d+"[^&]*?&gt;/gi
+      /&lt;[a-z]+\b[^&]*?\bindex="\d+-\d+"[^&]*?&gt;/gi,
+      // cite 태그는 이 에디터에서 정상적으로 쓰일 일이 없으므로,
+      // 여는 태그가 잘려나가 </cite>만 혼자 남은 경우도 통째로 제거
+      /<\/?cite\b[^>]*>/gi,
+      /&lt;\/?cite\b[^&]*?&gt;/gi
     ];
     var result = html;
     patterns.forEach(function(re){ result = result.replace(re, ''); });
