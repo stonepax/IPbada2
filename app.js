@@ -99,6 +99,32 @@ document.getElementById('signup-form').addEventListener('submit', async function
   else { msg.textContent = '가입 완료! 이메일을 확인해주세요.'; msg.className = 'auth-msg success'; }
 });
 
+/* ---- 비밀번호 찾기: 로그인 폼 -> 재설정 폼 전환, 재설정 이메일 발송 ---- */
+document.getElementById('forgot-password-toggle').addEventListener('click', function(e){
+  e.preventDefault();
+  document.querySelectorAll('.auth-form').forEach(function(f){ f.classList.remove('active'); });
+  document.querySelectorAll('.modal-tabs button').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('reset-form').classList.add('active');
+});
+
+document.getElementById('back-to-login-toggle').addEventListener('click', function(e){
+  e.preventDefault();
+  openAuthModal('login');
+});
+
+document.getElementById('reset-form').addEventListener('submit', async function(e){
+  e.preventDefault();
+  var msg = document.getElementById('reset-msg');
+  if(!supabaseClient){ msg.textContent = '서비스 연결에 실패했습니다. 잠시 후 다시 시도해주세요.'; msg.className = 'auth-msg error'; return; }
+  msg.textContent = '전송 중...'; msg.className = 'auth-msg';
+  var email = e.target.email.value;
+  var result = await supabaseClient.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/reset-password.html'
+  });
+  if(result.error){ msg.textContent = result.error.message; msg.className = 'auth-msg error'; }
+  else { msg.textContent = '이메일로 재설정 링크를 보냈습니다. 메일함을 확인해주세요.'; msg.className = 'auth-msg success'; }
+});
+
 var currentSession = null;
 
 function renderAuthUI(session){
