@@ -122,6 +122,20 @@
   var allNews = [];
   var currentDomain = 'all';
 
+  function formatDate(iso){
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return '';
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '.' + mm + '.' + dd;
+  }
+
+  // 원문 게재일이 있으면 그걸, 없으면 IP바다가 수집한 날짜를 보여준다 (독자가 최신/오래된 기사를 구분할 수 있게)
+  function dateLabel(n){
+    if(n.source_published_at) return formatDate(n.source_published_at) + ' 게재';
+    return formatDate(n.created_at) + ' 수집';
+  }
+
   function renderNews(){
     var grid = document.getElementById('news-grid');
     var filtered = currentDomain === 'all' ? allNews : allNews.filter(function(n){ return n.domain === currentDomain; });
@@ -137,6 +151,7 @@
           '<h4>' + escapeHtml(n.title_ko) + '</h4>' +
           '<p>' + escapeHtml(n.summary_ko) + '</p>' +
           relevance +
+          '<p style="font-size:12px;color:var(--muted);">📅 ' + dateLabel(n) + '</p>' +
           '<a class="dl" href="' + n.source_url + '" target="_blank" rel="noopener">' + escapeHtml(n.source_name) + ' 원문보기 →</a>' +
         '</div>';
     }).join('');
@@ -148,15 +163,17 @@
       grid.innerHTML = '<p class="resource-empty">서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.</p>';
       return;
     }
-    var result = await supabaseClient.from('news_items').select('*')
-      .eq('status', 'published')
-      .order('published_week', { ascending: false })
-      .order('created_at', { ascending: false });
+    var result = await supabaseClient.from('news_items').select('*').eq('status', 'published');
     if(result.error){
       grid.innerHTML = '<p class="resource-empty">뉴스를 불러오지 못했습니다: ' + escapeHtml(result.error.message) + '</p>';
       return;
     }
-    allNews = result.data || [];
+    // 원문 게재일(없으면 수집일) 기준으로 최신순 정렬 -> 실제로 최신 기사가 위로 오게
+    allNews = (result.data || []).slice().sort(function(a, b){
+      var aDate = new Date(a.source_published_at || a.created_at).getTime();
+      var bDate = new Date(b.source_published_at || b.created_at).getTime();
+      return bDate - aDate;
+    });
     renderNews();
   }
   loadNews();
@@ -190,7 +207,7 @@
     list.innerHTML = result.data.map(function(item){
       return '' +
         '<div class="news-approve-item" data-id="' + item.id + '">' +
-          '<div class="orig">원문: <a href="' + item.source_url + '" target="_blank" rel="noopener">' + escapeHtml(item.source_name) + '</a> · ' + escapeHtml(item.domain || '') + '</div>' +
+          '<div class="orig">원문: <a href="' + item.source_url + '" target="_blank" rel="noopener">' + escapeHtml(item.source_name) + '</a> · ' + escapeHtml(item.domain || '') + ' · ' + dateLabel(item) + '</div>' +
           '<h4>' + escapeHtml(item.title_ko) + '</h4>' +
           '<p>' + escapeHtml(item.summary_ko) + '</p>' +
           (item.korea_relevance ? '<p class="news-relevance">🇰🇷 ' + escapeHtml(item.korea_relevance) + '</p>' : '') +
