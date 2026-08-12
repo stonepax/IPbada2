@@ -26,6 +26,32 @@ function bindHamburger(){
 }
 bindHamburger();
 
+/* ---- Nav dropdown (예: 인사이트): 데스크톱은 CSS hover/focus-within으로 열리고,
+   여기 JS는 모바일/터치에서 화살표를 탭했을 때 열고 닫는 것만 담당한다 ---- */
+document.querySelectorAll('.dropdown-toggle').forEach(function(btn){
+  btn.addEventListener('click', function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    var item = btn.closest('.nav-item');
+    var willOpen = !item.classList.contains('open');
+    document.querySelectorAll('.nav-item.open').forEach(function(openItem){
+      openItem.classList.remove('open');
+      var openBtn = openItem.querySelector('.dropdown-toggle');
+      if(openBtn) openBtn.setAttribute('aria-expanded', 'false');
+    });
+    item.classList.toggle('open', willOpen);
+    btn.setAttribute('aria-expanded', String(willOpen));
+  });
+});
+document.addEventListener('click', function(e){
+  if(e.target.closest('.nav-item')) return;
+  document.querySelectorAll('.nav-item.open').forEach(function(item){
+    item.classList.remove('open');
+    var btn = item.querySelector('.dropdown-toggle');
+    if(btn) btn.setAttribute('aria-expanded', 'false');
+  });
+});
+
 /* ---- Make whole service cards clickable, not just the "자세히 보기" link ---- */
 document.querySelectorAll('.card').forEach(function(card){
   var link = card.querySelector('.card-link');
