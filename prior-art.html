@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>선행기술조사 | IP바다</title>
+<meta name="description" content="발명 내용을 입력하면 AI가 KIPRIS 특허를 검색하고 관련도순으로 유사·차이점을 요약해드립니다.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo"><span class="mark"></span>IP바다</a>
+    <nav class="main-nav">
+      <a href="resources.html">IP자료실</a>
+      <div class="nav-item">
+        <a href="index.html#filing">특허출원</a>
+        <button type="button" class="dropdown-toggle" aria-expanded="false" aria-haspopup="true" aria-label="특허출원 하위 메뉴 열기/닫기">▾</button>
+        <div class="dropdown-menu">
+          <a href="prior-art.html">선행기술조사</a>
+        </div>
+      </div>
+      <a href="trial.html">심판·소송</a>
+      <div class="nav-item">
+        <a href="insights.html">인사이트</a>
+        <button type="button" class="dropdown-toggle" aria-expanded="false" aria-haspopup="true" aria-label="인사이트 하위 메뉴 열기/닫기">▾</button>
+        <div class="dropdown-menu">
+          <a href="blog.html">블로그</a>
+          <a href="news.html">글로벌 IP뉴스</a>
+        </div>
+      </div>
+      <a href="index.html#market">IP마켓</a>
+      <a href="jobs.html">구인구직</a>
+      <a href="community.html">커뮤니티</a>
+    </nav>
+    <div class="header-actions" id="auth-actions">
+      <a class="btn btn-ghost" href="#login" data-auth-open="login">로그인</a>
+      <a class="btn btn-primary" href="#signup" data-auth-open="signup">무료 회원가입</a>
+      <button class="hamburger" aria-label="메뉴 열기"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal-box">
+    <button class="modal-close" id="auth-modal-close" type="button" aria-label="닫기">✕</button>
+    <div class="modal-tabs">
+      <button type="button" class="active" data-tab="login">로그인</button>
+      <button type="button" data-tab="signup">회원가입</button>
+    </div>
+    <form class="auth-form active" id="login-form" data-form="login">
+      <input type="email" name="email" placeholder="이메일" required>
+      <input type="password" name="password" placeholder="비밀번호" required>
+      <a href="#" id="forgot-password-toggle" style="align-self:flex-end;font-size:12.5px;color:var(--muted);">비밀번호를 잊으셨나요?</a>
+      <button type="submit" class="btn btn-primary">로그인</button>
+      <p class="auth-msg" id="login-msg"></p>
+    </form>
+    <form class="auth-form" id="signup-form" data-form="signup">
+      <input type="email" name="email" placeholder="이메일" required>
+      <input type="password" name="password" placeholder="비밀번호 (6자 이상)" required minlength="6">
+      <button type="submit" class="btn btn-primary">무료 회원가입</button>
+      <p class="auth-msg" id="signup-msg"></p>
+    </form>
+    <form class="auth-form" id="reset-form" data-form="reset">
+      <p style="font-size:13px;color:var(--muted);">가입하신 이메일로 비밀번호 재설정 링크를 보내드립니다.</p>
+      <input type="email" name="email" placeholder="이메일" required>
+      <button type="submit" class="btn btn-primary">재설정 링크 받기</button>
+      <p class="auth-msg" id="reset-msg"></p>
+      <a href="#" id="back-to-login-toggle" style="text-align:center;font-size:12.5px;color:var(--blue);font-weight:700;">← 로그인으로 돌아가기</a>
+    </form>
+  </div>
+</div>
+
+<!-- 선행기술조사: 로그인 게이트 -->
+<section class="section" id="top">
+  <div class="section-head">
+    <span class="eyebrow">특허출원 · 선행기술조사</span>
+    <h2>AI 선행기술조사</h2>
+    <p>발명 내용을 자연어로 입력하면 AI가 검색어를 확장해 KIPRIS 특허를 검색하고, 관련도순으로 정리해 유사점·차이점을 요약해드립니다.</p>
+  </div>
+
+  <div id="prior-art-gate" class="resource-empty" style="max-width:640px;margin:0 auto;text-align:center;">
+    로그인한 회원만 이용하실 수 있습니다. <a href="#login" data-auth-open="login" style="color:var(--blue);font-weight:700;">로그인하기</a>
+  </div>
+
+  <div id="prior-art-app" style="display:none;">
+    <div class="prior-art-panel">
+      <form id="prior-art-form">
+        <textarea name="query_text" id="query-text" placeholder="발명 내용을 최대한 구체적으로 입력해주세요. 예: 카메라로 촬영한 이미지에서 특정 객체를 실시간으로 인식하여 사용자에게 알림을 보내는 IoT 디바이스" required></textarea>
+        <button type="submit" class="btn btn-primary" id="search-btn">선행기술 검색</button>
+        <p class="form-msg" id="prior-art-msg"></p>
+      </form>
+    </div>
+
+    <div class="prior-art-progress" id="prior-art-progress" style="display:none;">
+      <div class="spinner"></div>
+      <p id="progress-label">발명 내용을 분석하는 중입니다...</p>
+      <p class="progress-sub">여러 단계(키워드 확장 → KIPRIS 검색 → 관련도 분석 → AI 요약)를 거치기 때문에 최대 1~2분 정도 걸릴 수 있습니다.</p>
+    </div>
+
+    <div id="prior-art-results"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="logo"><span class="mark"></span>IP바다</a>
+      <p>대한민국 IP 전문가를 위한 올인원 플랫폼. 판례·심결례부터 출원, 심판·소송, 마켓, 채용, 커뮤니티까지.</p>
+    </div>
+    <div>
+      <h5>IP자료실</h5>
+      <ul><li><a href="resources.html">전체 자료</a></li><li><a href="resources.html">성장단계별 자료</a></li></ul>
+    </div>
+    <div>
+      <h5>특허출원 · 심판</h5>
+      <ul><li><a href="index.html#filing">AI 명세서 생성</a></li><li><a href="prior-art.html">선행기술 검색</a></li><li><a href="trial.html">심판 진행 추적</a></li><li><a href="trial.html">전문가 연결</a></li></ul>
+    </div>
+    <div>
+      <h5>IP마켓 · 채용</h5>
+      <ul><li><a href="index.html#market">특허거래 마켓</a></li><li><a href="index.html#market">기술이전·라이선스</a></li><li><a href="jobs.html">변리사 채용</a></li><li><a href="jobs.html">프리랜서 마켓</a></li></ul>
+    </div>
+    <div>
+      <h5>회사 정보</h5>
+      <ul><li><a href="#">이용약관</a></li><li><a href="#">개인정보처리방침</a></li><li><a href="index.html#jobs-detail">제휴·광고 문의</a></li><li><a href="index.html#jobs-detail">고객센터</a></li></ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 IP바다(IPbada). All rights reserved.</span>
+    <span>본 검색 결과는 참고용이며 법적 효력을 갖지 않습니다. 정식 출원 전 반드시 전문가의 검토를 받으시기 바랍니다.</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="app.js"></script>
+<script>
+  /* ---- 선행기술조사: 로그인 게이트 + 검색 실행 + 결과 표시 ---- */
+  var currentSearchId = null;
+  var currentResults = [];
+  var summarizing = false;
+
+  function formatDate(raw){
+    if(!raw) return '';
+    var d = new Date(raw);
+    if(isNaN(d.getTime())) return raw;
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '.' + mm + '.' + dd;
+  }
+
+  function relevanceLabel(score){
+    if(score === null || score === undefined) return '-';
+    return Math.round(score * 100) + '%';
+  }
+
+  function renderResults(){
+    var wrap = document.getElementById('prior-art-results');
+    if(currentResults.length === 0){ wrap.innerHTML = ''; return; }
+    wrap.innerHTML =
+      '<div class="section-head" style="margin-top:8px;"><h3 style="font-size:19px;">검색 결과 (' + currentResults.length + '건, 관련도순)</h3></div>' +
+      '<div class="resource-grid">' +
+      currentResults.map(function(r){
+        var note = r.ai_similarity_note
+          ? '<p class="pa-note">' + escapeHtml(r.ai_similarity_note) + '</p>'
+          : '<p class="pa-note pa-note-loading"><span class="spinner spinner-sm"></span>AI 유사점·차이점 분석 중...</p>';
+        return '' +
+          '<div class="resource-card pa-card">' +
+            '<div class="badges"><span class="resource-badge">관련도 ' + relevanceLabel(r.relevance_score) + '</span></div>' +
+            '<h4>' + escapeHtml(r.title || '(제목 없음)') + '</h4>' +
+            '<p style="font-size:12.5px;color:var(--muted);">출원인: ' + escapeHtml(r.applicant || '정보 없음') + (r.filing_date ? ' · 출원일: ' + formatDate(r.filing_date) : '') + '</p>' +
+            note +
+            (r.kipris_url ? '<a class="dl" href="' + escapeHtml(r.kipris_url) + '" target="_blank" rel="noopener">KIPRIS 원문 보기 →</a>' : '') +
+          '</div>';
+      }).join('') +
+      '</div>';
+  }
+
+  async function pollSummarize(){
+    if(summarizing || !currentSearchId) return;
+    summarizing = true;
+    try {
+      var result = await supabaseClient.functions.invoke('prior-art-search', {
+        body: { action: 'summarize', search_id: currentSearchId }
+      });
+      if(result.error){
+        summarizing = false;
+        return;
+      }
+      var data = result.data;
+      (data.updated || []).forEach(function(u){
+        var target = currentResults.find(function(r){ return r.id === u.id; });
+        if(target) target.ai_similarity_note = u.ai_similarity_note;
+      });
+      renderResults();
+      summarizing = false;
+      if(!data.done){
+        setTimeout(pollSummarize, 800);
+      } else {
+        document.getElementById('progress-label').textContent = '완료되었습니다.';
+        document.getElementById('prior-art-progress').style.display = 'none';
+      }
+    } catch(e){
+      summarizing = false;
+    }
+  }
+
+  document.getElementById('prior-art-form').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var msg = document.getElementById('prior-art-msg');
+    var btn = document.getElementById('search-btn');
+    var queryText = document.getElementById('query-text').value.trim();
+    if(!supabaseClient || !currentSession){
+      msg.textContent = '로그인이 필요합니다.';
+      msg.className = 'form-msg error';
+      return;
+    }
+    msg.textContent = '';
+    btn.disabled = true;
+    currentResults = [];
+    currentSearchId = null;
+    document.getElementById('prior-art-results').innerHTML = '';
+    document.getElementById('progress-label').textContent = '발명 내용을 분석하는 중입니다...';
+    document.getElementById('prior-art-progress').style.display = 'block';
+
+    var result;
+    try {
+      result = await supabaseClient.functions.invoke('prior-art-search', {
+        body: { action: 'start', query_text: queryText }
+      });
+    } catch(err) {
+      document.getElementById('prior-art-progress').style.display = 'none';
+      msg.textContent = '검색 요청 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+      msg.className = 'form-msg error';
+      btn.disabled = false;
+      return;
+    }
+
+    btn.disabled = false;
+    var data = result.data;
+    if(result.error || !data || data.error){
+      document.getElementById('prior-art-progress').style.display = 'none';
+      msg.textContent = (data && data.error) ? data.error : '검색에 실패했습니다. 잠시 후 다시 시도해주세요.';
+      msg.className = 'form-msg error';
+      return;
+    }
+
+    currentSearchId = data.search_id;
+    currentResults = data.results || [];
+    if(data.warnings && data.warnings.length > 0){
+      msg.textContent = '일부 검색식에서 오류가 있었지만 검색은 완료되었습니다.';
+      msg.className = 'form-msg';
+    }
+    document.getElementById('progress-label').textContent = 'AI가 각 특허와의 유사점·차이점을 요약하는 중입니다...';
+    renderResults();
+    pollSummarize();
+  });
+
+  function refreshPriorArtGate(){
+    var isLoggedIn = !!currentSession;
+    document.getElementById('prior-art-gate').style.display = isLoggedIn ? 'none' : 'block';
+    document.getElementById('prior-art-app').style.display = isLoggedIn ? 'block' : 'none';
+  }
+
+  if(supabaseClient){
+    supabaseClient.auth.onAuthStateChange(function(){ refreshPriorArtGate(); });
+    supabaseClient.auth.getSession().then(function(){ refreshPriorArtGate(); });
+  }
+</script>
+
+</body>
+</html>
