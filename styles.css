@@ -281,6 +281,26 @@ nav.main-nav a:hover{color:var(--blue);}
 .blog-write-panel textarea{min-height:90px;resize:vertical;}
 .blog-write-panel button{width:100%;}
 
+/* ===== 선행기술조사 ===== */
+.prior-art-panel{max-width:720px;margin:0 auto 28px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:28px;box-shadow:var(--shadow);}
+.prior-art-panel textarea{
+  width:100%;border:1px solid var(--border);border-radius:9px;padding:13px 14px;font-size:14px;font-family:inherit;
+  min-height:120px;resize:vertical;margin-bottom:14px;
+}
+.prior-art-panel button{width:100%;}
+.prior-art-progress{max-width:520px;margin:0 auto 32px;text-align:center;}
+.prior-art-progress p{font-size:14px;color:var(--text);margin-top:14px;}
+.prior-art-progress .progress-sub{font-size:12.5px;color:var(--muted);margin-top:6px;}
+.spinner{
+  width:34px;height:34px;border-radius:50%;margin:0 auto;
+  border:3px solid var(--blue-light);border-top-color:var(--blue);
+  animation:pa-spin .8s linear infinite;
+}
+.spinner-sm{width:13px;height:13px;border-width:2px;display:inline-block;margin:0 6px 0 0;vertical-align:middle;}
+@keyframes pa-spin{to{transform:rotate(360deg);}}
+.pa-card .pa-note{font-size:13.3px;color:var(--text);line-height:1.6;background:var(--bg-alt);border-radius:8px;padding:10px 12px;}
+.pa-card .pa-note-loading{color:var(--muted);display:flex;align-items:center;}
+
 .blog-detail{max-width:720px;margin:0 auto;}
 .blog-detail .back-link{display:inline-block;margin-bottom:20px;font-size:13.5px;font-weight:700;color:var(--blue);}
 .blog-detail .meta{font-size:12.5px;color:var(--muted);margin-bottom:10px;}
