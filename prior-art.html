@@ -171,7 +171,7 @@
             '<p style="font-size:12.5px;color:var(--muted);">출원인: ' + escapeHtml(r.applicant || '정보 없음') + (r.filing_date ? ' · 출원일: ' + formatDate(r.filing_date) : '') + '</p>' +
             (r.application_number ? '<p style="font-size:12.5px;color:var(--muted);">출원번호: <strong style="color:var(--text);user-select:all;">' + escapeHtml(r.application_number) + '</strong></p>' : '') +
             note +
-            (r.kipris_url ? '<a class="dl" href="' + escapeHtml(r.kipris_url) + '" target="_blank" rel="noopener">KIPRIS에서 출원번호로 검색하기 →</a>' : '') +
+            (r.kipris_url ? '<a class="dl" href="' + escapeHtml(r.kipris_url) + '" target="_blank" rel="noopener">KIPRIS 특허검색 열기 → (출원번호를 검색창에 붙여넣어주세요)</a>' : '') +
           '</div>';
       }).join('') +
       '</div>';
