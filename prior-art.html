@@ -176,6 +176,7 @@
             (r.application_number ? '<p style="font-size:12.5px;color:var(--muted);">출원번호: <strong style="color:var(--text);user-select:all;">' + escapeHtml(r.application_number) + '</strong></p>' : '') +
             note +
             (r.kipris_url ? '<a class="dl" href="' + escapeHtml(r.kipris_url) + '" target="_blank" rel="noopener">KIPRIS 특허검색 열기 → (출원번호를 검색창에 붙여넣어주세요)</a>' : '') +
+            '<button type="button" class="btn btn-dark start-spec-btn" data-result-id="' + r.id + '" style="margin-top:10px;">이 특허 기준으로 명세서 작성 시작 →</button>' +
           '</div>';
       }).join('') +
       '</div>';
@@ -209,6 +210,27 @@
       summarizing = false;
     }
   }
+
+  /* ---- 이 특허 기준으로 명세서 작성 시작: patent_projects row 생성 후 AI 명세서 작성 페이지로 이동 ---- */
+  document.getElementById('prior-art-results').addEventListener('click', async function(e){
+    var btn = e.target.closest('.start-spec-btn');
+    if(!btn) return;
+    if(!supabaseClient || !currentSession){ return; }
+    var originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '프로젝트 생성 중...';
+    var result = await supabaseClient.from('patent_projects').insert({
+      client_id: currentSession.user.id,
+      based_on_prior_art_id: btn.dataset.resultId
+    }).select().single();
+    if(result.error || !result.data){
+      btn.disabled = false;
+      btn.textContent = originalText;
+      alert('명세서 작성 프로젝트를 시작하지 못했습니다: ' + (result.error ? result.error.message : ''));
+      return;
+    }
+    window.location.href = 'spec-writer.html?project=' + result.data.id;
+  });
 
   document.getElementById('prior-art-form').addEventListener('submit', async function(e){
     e.preventDefault();
