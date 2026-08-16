@@ -68,9 +68,15 @@ nav.main-nav a:hover{color:var(--blue);}
 }
 .dropdown-toggle:hover{color:var(--blue);}
 .dropdown-menu{
-  position:absolute;top:100%;left:0;min-width:170px;background:#fff;border:1px solid var(--border);
-  border-radius:10px;box-shadow:var(--shadow);padding:8px;margin-top:4px;
-  display:none;flex-direction:column;gap:2px;z-index:150;
+  /* top(트리거 바로 아래)과 메뉴 사이에 틈이 있으면 마우스가 그 틈을 지날 때
+     호버가 끊겨 메뉴가 닫혀버리므로, margin 대신 투명 padding-top으로 여백을 만들어
+     트리거~메뉴 사이를 끊김 없이 하나의 호버 영역으로 이어붙인다 */
+  position:absolute;top:100%;left:0;min-width:170px;background:transparent;
+  padding-top:4px;display:none;flex-direction:column;z-index:150;
+}
+.dropdown-menu-inner{
+  background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);
+  padding:8px;display:flex;flex-direction:column;gap:2px;
 }
 .dropdown-menu a{padding:9px 12px;border-radius:7px;font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap;}
 .dropdown-menu a:hover{background:var(--blue-light);color:var(--blue);}
@@ -79,8 +85,9 @@ nav.main-nav a:hover{color:var(--blue);}
 .nav-item.open .dropdown-menu{display:flex;}
 
 @media (max-width:960px){
-  .nav-item{display:flex;justify-content:space-between;align-items:center;width:100%;}
-  .dropdown-menu{position:static;box-shadow:none;border:none;background:transparent;padding:2px 0 2px 14px;margin-top:0;}
+  .nav-item{display:flex;justify-content:space-between;align-items:center;width:100%;flex-wrap:wrap;}
+  .dropdown-menu{position:static;width:100%;padding:2px 0 2px 14px;}
+  .dropdown-menu-inner{background:transparent;border:none;box-shadow:none;padding:0;}
 }
 
 .header-actions{display:flex;align-items:center;gap:10px;}
