@@ -151,6 +151,7 @@
 
   // 명세서 초안 생성/편집 전용 상태
   var specGenerating = false;
+  var specGenStage = '';
   var specError = '';
   var specSaveMsg = '';
   var specSaveError = false;
@@ -249,9 +250,10 @@
           '<h3>답변이 모두 저장되었습니다</h3>' +
           '<p class="spec-hint">입력하신 내용을 바탕으로 AI가 명세서 초안 전체(발명의 명칭·기술분야·배경기술·해결과제·도면의 간단한 설명·구체적인 내용·청구범위·요약서)를 작성합니다.</p>' +
           (specError ? '<p class="form-msg error">' + escapeHtml(specError) + '</p>' : '') +
+          (specGenerating ? '<div class="prior-art-progress" style="margin:16px 0;"><div class="spinner"></div><p>' + escapeHtml(specGenStage) + '</p></div>' : '') +
           '<div class="spec-actions" style="justify-content:center;">' +
             '<button type="button" class="btn btn-dark" id="spec-generate-btn"' + (specGenerating ? ' disabled' : '') + '>' +
-              (specGenerating ? 'AI가 명세서를 작성하는 중... (최대 1분)' : 'AI 명세서 초안 생성하기 →') +
+              (specGenerating ? '생성 중...' : 'AI 명세서 초안 생성하기 →') +
             '</button>' +
           '</div>' +
         '</div>';
@@ -266,17 +268,66 @@
       return '<div class="spec-section"><h4>' + escapeHtml(s.label) + '</h4>' + hint + field + '</div>';
     }).join('');
 
+    var incomplete = !project.claims_text || !project.detailed_description;
+
     return '' +
       '<div class="spec-panel" style="max-width:760px;">' +
         '<h3>명세서 초안</h3>' +
         '<p class="spec-hint">AI가 생성한 초안입니다. 각 항목을 자유롭게 수정한 뒤 저장하세요. 실제 출원 전 반드시 변리사의 검토를 받으시기 바랍니다.</p>' +
+        (specGenerating ? '<div class="prior-art-progress" style="margin-bottom:16px;"><div class="spinner"></div><p>' + escapeHtml(specGenStage) + '</p></div>' : '') +
+        (specError ? '<p class="form-msg error">' + escapeHtml(specError) + '</p>' : '') +
         sectionsHtml +
         (specSaveMsg ? '<p class="form-msg ' + (specSaveError ? 'error' : 'success') + '">' + escapeHtml(specSaveMsg) + '</p>' : '') +
         '<div class="spec-actions">' +
+          '<button type="button" class="btn btn-ghost" id="spec-regenerate-btn"' + (specGenerating ? ' disabled' : '') + '>' +
+            (incomplete ? '이어서/다시 생성하기' : 'AI로 다시 생성') +
+          '</button>' +
           '<button type="button" class="btn btn-ghost" id="spec-save-btn">변경사항 저장</button>' +
           '<button type="button" class="btn btn-primary" id="spec-download-btn">.docx 다운로드 →</button>' +
         '</div>' +
       '</div>';
+  }
+
+  // Claude 호출 1번짜리 생성은 Edge Function 실행 시간 제한(EarlyDrop)에 걸려서,
+  // 3단계(core -> description -> claims)로 나눠 순서대로 호출한다 (prior-art-search의
+  // start/summarize 배치 방식과 같은 원리).
+  var SPEC_GEN_STAGES = [
+    { action: 'core', label: '기본 정보(발명의 명칭·기술분야·배경기술·해결과제·요약서)를 작성하는 중...' },
+    { action: 'description', label: '도면의 간단한 설명과 구체적인 내용을 작성하는 중...' },
+    { action: 'claims', label: '특허청구범위 초안을 작성하는 중...' }
+  ];
+
+  async function runSpecGeneration(){
+    specGenerating = true;
+    specError = '';
+    var lastWarnings = [];
+    try {
+      for (var i = 0; i < SPEC_GEN_STAGES.length; i++) {
+        specGenStage = SPEC_GEN_STAGES[i].label;
+        renderPanel();
+        var result = await supabaseClient.functions.invoke('patent-spec-generate', {
+          body: { project_id: project.id, action: SPEC_GEN_STAGES[i].action }
+        });
+        if (result.error || !result.data || result.data.error) {
+          throw new Error((result.data && result.data.error) || '생성 실패');
+        }
+        project = result.data.project;
+        lastWarnings = result.data.warnings || [];
+      }
+      if (lastWarnings.length > 0) {
+        specSaveMsg = '일부 항목에 문체 검증을 통과하지 못한 표현이 남아있을 수 있습니다 (' +
+          lastWarnings.join(', ') + '). 아래 내용을 확인 후 필요하면 직접 수정해주세요.';
+        specSaveError = true;
+      } else {
+        specSaveMsg = '';
+        specSaveError = false;
+      }
+    } catch (e) {
+      specError = 'AI 명세서 초안 생성에 실패했습니다 (' + specGenStage + '). 잠시 후 다시 시도해주세요.';
+    }
+    specGenerating = false;
+    specGenStage = '';
+    renderPanel();
   }
 
   // 파일 시스템에서 쓸 수 없는 문자(\ / : * ? " < > |)를 제거하고, 너무 긴 제목은
@@ -449,32 +500,10 @@
     });
 
     var specGenBtn = document.getElementById('spec-generate-btn');
-    if(specGenBtn) specGenBtn.addEventListener('click', async function(){
-      specGenerating = true;
-      specError = '';
-      renderPanel();
-      try {
-        var result = await supabaseClient.functions.invoke('patent-spec-generate', {
-          body: { project_id: project.id }
-        });
-        if(result.error || !result.data || result.data.error){
-          throw new Error((result.data && result.data.error) || '생성 실패');
-        }
-        project = result.data.project;
-        if(result.data.warnings && result.data.warnings.length > 0){
-          specSaveMsg = '일부 항목에 문체 검증을 통과하지 못한 표현이 남아있을 수 있습니다 (' +
-            result.data.warnings.join(', ') + '). 아래 내용을 확인 후 필요하면 직접 수정해주세요.';
-          specSaveError = true;
-        } else {
-          specSaveMsg = '';
-          specSaveError = false;
-        }
-      } catch(e){
-        specError = 'AI 명세서 초안 생성에 실패했습니다. 잠시 후 다시 시도해주세요.';
-      }
-      specGenerating = false;
-      renderPanel();
-    });
+    if(specGenBtn) specGenBtn.addEventListener('click', runSpecGeneration);
+
+    var specRegenBtn = document.getElementById('spec-regenerate-btn');
+    if(specRegenBtn) specRegenBtn.addEventListener('click', runSpecGeneration);
 
     var specSaveBtn = document.getElementById('spec-save-btn');
     if(specSaveBtn) specSaveBtn.addEventListener('click', async function(){
