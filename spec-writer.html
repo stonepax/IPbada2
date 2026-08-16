@@ -129,17 +129,29 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="app.js"></script>
 <script>
-  /* ---- AI 명세서 작성: 3단계 가이드 UI ---- */
+  /* ---- AI 명세서 작성: 3단계 가이드 UI ----
+     1단계는 두 가지 경우로 나뉜다:
+     - 선행기술조사 카드에서 "지름길"로 들어온 경우(project.based_on_prior_art_id가
+       이미 있음): 1단계 자체를 건너뛰고 2단계부터 시작
+     - "특허출원 -> AI명세서 작성" 메뉴로 바로 들어온 경우: 1단계에서 발명 설명을
+       입력받아 공용 검색 함수(prior-art-search, app.js의 runPriorArtSearch)를
+       그 자리에서 호출해 결과를 보여준다. KIPRIS/Voyage/Claude 파이프라인은
+       prior-art.html과 완전히 동일한 Edge Function을 공유한다. ---- */
   var project = null;
   var priorArt = null;
-  var currentStep = 2; // 기본은 2단계부터(선행기술 연결 없이 바로 시작한 경우)
-  var answers = { step1: '', step2: '', step3: '' };
-  var draftLoading = false;
-  var draftError = '';
+  var currentStep = 2;
+  var answers = { step2: '', step3: '' };
+
+  // 1단계(entry B 자동검색) 전용 상태
+  var step1Query = '';
+  var step1Results = [];
+  var step1Searching = false;
+  var step1ProgressLabel = '';
+  var step1Msg = '';
 
   function stepDefs(){
     return [
-      { n: 1, label: '선행기술 분석' },
+      { n: 1, label: '선행기술 검색' },
       { n: 2, label: '차별점' },
       { n: 3, label: '개선 이유' }
     ];
@@ -151,7 +163,7 @@
     var effectiveCurrent = currentStep === 'done' ? 4 : currentStep;
     stepsWrap.innerHTML = stepDefs().map(function(d, idx){
       var cls = '';
-      if(!priorArt && d.n === 1) cls = 'skip';
+      if(priorArt && d.n === 1) cls = 'skip'; // 지름길로 들어와 이미 선행기술이 연결된 경우
       else if(d.n === effectiveCurrent) cls = 'active';
       else if(d.n < effectiveCurrent) cls = 'done';
       var line = idx < 2 ? '<div class="spec-line"></div>' : '';
@@ -159,20 +171,30 @@
     }).join('');
   }
 
+  function renderStep1Panel(){
+    var resultsHtml = '';
+    if(step1Results.length > 0){
+      resultsHtml =
+        '<div class="section-head" style="margin:24px 0 16px;"><h3 style="font-size:16px;">검색 결과 (' + step1Results.length + '건)</h3></div>' +
+        '<div class="resource-grid">' + renderPriorArtCards(step1Results, { showStartSpecButton: true }) + '</div>' +
+        '<div class="spec-actions" style="margin-top:20px;"><button type="button" class="btn btn-ghost" id="step1-continue">특정 결과를 선택하지 않고 계속하기 →</button></div>';
+    }
+    return '' +
+      '<div class="spec-panel">' +
+        '<h3>1단계 · 발명 내용을 입력하고 선행기술을 검색하세요</h3>' +
+        '<p class="spec-hint">발명 내용을 입력하면 AI가 관련 선행특허를 자동으로 찾아 관련도순으로 보여드립니다.</p>' +
+        '<textarea id="step1-query" placeholder="발명 내용을 최대한 구체적으로 입력해주세요">' + escapeHtml(step1Query) + '</textarea>' +
+        (step1Msg ? '<p class="form-msg error">' + escapeHtml(step1Msg) + '</p>' : '') +
+        '<div class="spec-actions"><button type="button" class="btn btn-primary" id="step1-search-btn"' + (step1Searching ? ' disabled' : '') + '>' + (step1Searching ? '검색 중...' : '선행기술 검색') + '</button></div>' +
+        (step1Searching ? '<div class="prior-art-progress" style="margin-top:12px;"><div class="spinner"></div><p>' + escapeHtml(step1ProgressLabel) + '</p></div>' : '') +
+        resultsHtml +
+      '</div>';
+  }
+
   function renderPanel(){
     var wrap = document.getElementById('spec-panel-wrap');
     if(currentStep === 1){
-      wrap.innerHTML =
-        '<div class="spec-panel">' +
-          '<h3>1단계 · 선행기술은 무엇을 해결하나요?</h3>' +
-          '<p class="spec-hint">AI가 선택하신 선행특허를 바탕으로 초안을 작성했습니다. 자유롭게 확인하고 수정해주세요.</p>' +
-          (priorArt ? '<div class="spec-source"><strong>비교 대상 선행특허</strong>' + escapeHtml(priorArt.title || '(제목 없음)') + '</div>' : '') +
-          (draftLoading
-            ? '<div class="spec-draft-loading"><span class="spinner spinner-sm"></span>AI가 초안을 작성하는 중입니다...</div>'
-            : '<textarea id="step1-input" placeholder="선행기술이 해결하는 문제 또는 현재 기술수준을 입력해주세요">' + escapeHtml(answers.step1) + '</textarea>') +
-          (draftError ? '<p class="form-msg error">' + escapeHtml(draftError) + '</p>' : '') +
-          '<div class="spec-actions"><button type="button" class="btn btn-primary" id="step1-next">다음 →</button></div>' +
-        '</div>';
+      wrap.innerHTML = renderStep1Panel();
     } else if(currentStep === 2){
       wrap.innerHTML =
         '<div class="spec-panel">' +
@@ -180,7 +202,7 @@
           '<p class="spec-hint">선행기술과 비교했을 때, 당신의 발명이 구조적·기능적으로 다른 점을 구체적으로 적어주세요.</p>' +
           '<textarea id="step2-input" placeholder="예: 선행기술은 ~한 구조인 반면, 본 발명은 ~한 구조를 사용합니다.">' + escapeHtml(answers.step2) + '</textarea>' +
           '<div class="spec-actions">' +
-            (priorArt ? '<button type="button" class="btn btn-ghost" id="step2-prev">← 이전</button>' : '') +
+            (!priorArt ? '<button type="button" class="btn btn-ghost" id="step2-prev">← 이전</button>' : '') +
             '<button type="button" class="btn btn-primary" id="step2-next">다음 →</button>' +
           '</div>' +
         '</div>';
@@ -205,18 +227,83 @@
     bindPanelEvents();
   }
 
-  function bindPanelEvents(){
-    var s1next = document.getElementById('step1-next');
-    if(s1next) s1next.addEventListener('click', async function(){
-      var input = document.getElementById('step1-input');
-      var val = input ? input.value.trim() : answers.step1;
-      answers.step1 = val;
-      s1next.disabled = true; s1next.textContent = '저장 중...';
-      await supabaseClient.from('patent_projects').update({ current_tech_level: val }).eq('id', project.id);
-      currentStep = 2;
-      renderSteps();
+  async function handleStep1Search(){
+    var input = document.getElementById('step1-query');
+    var text = input.value.trim();
+    if(text.length < 5){
+      step1Msg = '발명 내용을 조금 더 자세히 입력해주세요.';
       renderPanel();
+      return;
+    }
+    step1Query = text;
+    step1Msg = '';
+    step1Searching = true;
+    step1Results = [];
+    step1ProgressLabel = '발명 내용을 분석하는 중입니다...';
+    renderPanel();
+
+    await runPriorArtSearch(text, project.id, {
+      onError: function(errMsg){
+        step1Searching = false;
+        step1Msg = errMsg;
+        renderPanel();
+      },
+      onStart: function(data){
+        step1Results = data.results || [];
+        step1ProgressLabel = 'AI가 각 특허와의 유사점·차이점을 요약하는 중입니다...';
+        renderPanel();
+      },
+      onUpdate: function(data){
+        (data.updated || []).forEach(function(u){
+          var target = step1Results.find(function(r){ return r.id === u.id; });
+          if(target) target.ai_similarity_note = u.ai_similarity_note;
+        });
+        renderPanel();
+      },
+      onDone: function(){
+        step1Searching = false;
+        renderPanel();
+      }
     });
+  }
+
+  // 1단계 검색 결과 카드에서 "이 특허 기준으로 명세서 작성 시작"을 누른 경우:
+  // (독립된 선행기술조사 페이지와 달리) 새 프로젝트를 만들지 않고, 지금 진행 중인
+  // 프로젝트에 based_on_prior_art_id만 채워서 2단계로 바로 넘어간다.
+  async function handleStep1PickResult(resultId, btn){
+    var originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '연결하는 중...';
+    var result = await supabaseClient.from('patent_projects')
+      .update({ based_on_prior_art_id: resultId }).eq('id', project.id).select().single();
+    if(result.error || !result.data){
+      btn.disabled = false;
+      btn.textContent = originalText;
+      alert('연결하지 못했습니다: ' + (result.error ? result.error.message : ''));
+      return;
+    }
+    project = result.data;
+    priorArt = step1Results.find(function(r){ return r.id === resultId; }) || null;
+    currentStep = 2;
+    renderSteps();
+    renderPanel();
+  }
+
+  function bindPanelEvents(){
+    var s1searchBtn = document.getElementById('step1-search-btn');
+    if(s1searchBtn) s1searchBtn.addEventListener('click', handleStep1Search);
+
+    var s1continue = document.getElementById('step1-continue');
+    if(s1continue) s1continue.addEventListener('click', function(){ currentStep = 2; renderSteps(); renderPanel(); });
+
+    if(currentStep === 1){
+      var panelWrap1 = document.getElementById('spec-panel-wrap');
+      panelWrap1.addEventListener('click', function(e){
+        var pickBtn = e.target.closest('.start-spec-btn');
+        if(!pickBtn) return;
+        handleStep1PickResult(pickBtn.dataset.resultId, pickBtn);
+      });
+    }
 
     var s2prev = document.getElementById('step2-prev');
     if(s2prev) s2prev.addEventListener('click', function(){ currentStep = 1; renderSteps(); renderPanel(); });
@@ -254,23 +341,6 @@
     });
   }
 
-  async function loadDraft(){
-    draftLoading = true;
-    draftError = '';
-    renderPanel();
-    try {
-      var result = await supabaseClient.functions.invoke('patent-spec-draft', { body: { project_id: project.id } });
-      if(result.error || !result.data || result.data.error){
-        throw new Error((result.data && result.data.error) || '초안 생성 실패');
-      }
-      answers.step1 = result.data.draft || '';
-    } catch(e){
-      draftError = 'AI 초안 생성에 실패했습니다. 직접 입력해주세요.';
-    }
-    draftLoading = false;
-    renderPanel();
-  }
-
   async function initSpecWriter(){
     var params = new URLSearchParams(window.location.search);
     var projectId = params.get('project');
@@ -293,7 +363,6 @@
       window.history.replaceState(null, '', 'spec-writer.html?project=' + project.id);
     }
 
-    answers.step1 = project.current_tech_level || '';
     answers.step2 = project.diff_from_prior_art || '';
     answers.step3 = project.improvement_reason || '';
 
@@ -302,12 +371,11 @@
       if(!pr.error) priorArt = pr.data;
     }
 
-    currentStep = priorArt ? 1 : 2;
+    // 지름길(카드에서 진입, based_on_prior_art_id 있음)이면 1단계(검색) 자체를 건너뛰고 2단계부터.
+    // "특허출원 -> AI명세서 작성"으로 바로 들어왔으면 1단계(검색)부터 시작.
+    currentStep = priorArt ? 2 : 1;
     renderSteps();
     renderPanel();
-    if(currentStep === 1 && !answers.step1){
-      loadDraft();
-    }
   }
 
   function refreshSpecGate(){

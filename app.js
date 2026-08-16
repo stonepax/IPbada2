@@ -187,3 +187,83 @@ if(supabaseClient){
   supabaseClient.auth.onAuthStateChange(function(_event, session){ renderAuthUI(session); });
   supabaseClient.auth.getSession().then(function(res){ renderAuthUI(res.data.session); });
 }
+
+/* ---- 선행기술조사 공용 헬퍼 (prior-art.html / spec-writer.html이 함께 사용) ----
+   KIPRIS/Voyage/Claude 파이프라인은 Edge Function "prior-art-search" 하나에만 있고,
+   여기 있는 건 그 함수를 호출해서 결과를 카드로 그려주는 프론트엔드 공통 로직이다. ---- */
+function paFormatDate(raw){
+  if(!raw) return '';
+  var d = new Date(raw);
+  if(isNaN(d.getTime())) return raw;
+  var mm = String(d.getMonth() + 1).padStart(2, '0');
+  var dd = String(d.getDate()).padStart(2, '0');
+  return d.getFullYear() + '.' + mm + '.' + dd;
+}
+
+function paRelevanceLabel(score){
+  if(score === null || score === undefined) return '-';
+  return Math.round(score * 100) + '%';
+}
+
+// opts.showStartSpecButton: true면 각 카드에 "이 특허 기준으로 명세서 작성 시작" 버튼을 붙인다
+function renderPriorArtCards(results, opts){
+  opts = opts || {};
+  return results.map(function(r){
+    var note = r.ai_similarity_note
+      ? '<p class="pa-note">' + escapeHtml(r.ai_similarity_note) + '</p>'
+      : '<p class="pa-note pa-note-loading"><span class="spinner spinner-sm"></span>AI 유사점·차이점 분석 중...</p>';
+    var specBtn = opts.showStartSpecButton
+      ? '<button type="button" class="btn btn-dark start-spec-btn" data-result-id="' + r.id + '" style="margin-top:10px;">이 특허 기준으로 명세서 작성 시작 →</button>'
+      : '';
+    return '' +
+      '<div class="resource-card pa-card">' +
+        '<div class="badges"><span class="resource-badge">관련도 ' + paRelevanceLabel(r.relevance_score) + '</span></div>' +
+        '<h4>' + escapeHtml(r.title || '(제목 없음)') + '</h4>' +
+        '<p style="font-size:12.5px;color:var(--muted);">출원인: ' + escapeHtml(r.applicant || '정보 없음') + (r.filing_date ? ' · 출원일: ' + paFormatDate(r.filing_date) : '') + '</p>' +
+        (r.application_number ? '<p style="font-size:12.5px;color:var(--muted);">출원번호: <strong style="color:var(--text);user-select:all;">' + escapeHtml(r.application_number) + '</strong></p>' : '') +
+        note +
+        (r.kipris_url ? '<a class="dl" href="' + escapeHtml(r.kipris_url) + '" target="_blank" rel="noopener">KIPRIS 특허검색 열기 → (출원번호를 검색창에 붙여넣어주세요)</a>' : '') +
+        specBtn +
+      '</div>';
+  }).join('');
+}
+
+// "prior-art-search" Edge Function의 start -> summarize(반복) 흐름을 캡슐화.
+// projectId를 넘기면 prior_art_searches.project_id에 저장되어 나중에 이 검색이
+// 어느 명세서 작성 프로젝트에서 시작됐는지 추적할 수 있다 (없어도 정상 동작).
+async function runPriorArtSearch(queryText, projectId, callbacks){
+  callbacks = callbacks || {};
+  var startResult;
+  try {
+    startResult = await supabaseClient.functions.invoke('prior-art-search', {
+      body: { action: 'start', query_text: queryText, project_id: projectId || null }
+    });
+  } catch(err) {
+    if(callbacks.onError) callbacks.onError('검색 요청 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+    return null;
+  }
+  var data = startResult.data;
+  if(startResult.error || !data || data.error){
+    if(callbacks.onError) callbacks.onError((data && data.error) ? data.error : '검색에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    return null;
+  }
+  if(callbacks.onStart) callbacks.onStart(data);
+
+  var searchId = data.search_id;
+  function poll(){
+    supabaseClient.functions.invoke('prior-art-search', {
+      body: { action: 'summarize', search_id: searchId }
+    }).then(function(result){
+      if(result.error) return;
+      var updData = result.data;
+      if(callbacks.onUpdate) callbacks.onUpdate(updData);
+      if(!updData.done){
+        setTimeout(poll, 800);
+      } else if(callbacks.onDone) {
+        callbacks.onDone();
+      }
+    }).catch(function(){});
+  }
+  poll();
+  return data;
+}
