@@ -278,6 +278,14 @@
       '</div>';
   }
 
+  // 파일 시스템에서 쓸 수 없는 문자(\ / : * ? " < > |)를 제거하고, 너무 긴 제목은
+  // 잘라내서 OS 저장 대화상자가 파일명을 거부하는 일(예: 저장 버튼 비활성화)을 막는다
+  function sanitizeFileName(name){
+    var cleaned = (name || '명세서초안').replace(/[\\/:*?"<>|]/g, ' ').replace(/\s+/g, ' ').trim();
+    if(cleaned.length > 60) cleaned = cleaned.slice(0, 60).trim();
+    return cleaned || '명세서초안';
+  }
+
   function ensureDocxLoaded(callback){
     if(window.docx){ callback(); return; }
     if(docxLibLoading){ setTimeout(function(){ ensureDocxLoaded(callback); }, 200); return; }
@@ -318,7 +326,7 @@
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
       a.href = url;
-      a.download = (project.title_ko || '명세서초안') + '.docx';
+      a.download = sanitizeFileName(project.title_ko) + '.docx';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
