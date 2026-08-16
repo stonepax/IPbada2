@@ -20,6 +20,7 @@
         <div class="dropdown-menu">
           <div class="dropdown-menu-inner">
           <a href="prior-art.html">선행기술조사</a>
+          <a href="spec-writer.html">AI명세서 작성</a>
           </div>
         </div>
       </div>
@@ -119,7 +120,7 @@
     </div>
     <div>
       <h5>특허출원 · 심판</h5>
-      <ul><li><a href="index.html#filing">AI 명세서 생성</a></li><li><a href="prior-art.html">선행기술 검색</a></li><li><a href="trial.html">심판 진행 추적</a></li><li><a href="trial.html">전문가 연결</a></li></ul>
+      <ul><li><a href="spec-writer.html">AI 명세서 생성</a></li><li><a href="prior-art.html">선행기술 검색</a></li><li><a href="trial.html">심판 진행 추적</a></li><li><a href="trial.html">전문가 연결</a></li></ul>
     </div>
     <div>
       <h5>IP마켓 · 채용</h5>
@@ -139,76 +140,37 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="app.js"></script>
 <script>
-  /* ---- 선행기술조사: 로그인 게이트 + 검색 실행 + 결과 표시 ---- */
-  var currentSearchId = null;
+  /* ---- 선행기술조사: 로그인 게이트 + 검색 실행 + 결과 표시 (검색/카드 공용 로직은 app.js) ---- */
   var currentResults = [];
-  var summarizing = false;
-
-  function formatDate(raw){
-    if(!raw) return '';
-    var d = new Date(raw);
-    if(isNaN(d.getTime())) return raw;
-    var mm = String(d.getMonth() + 1).padStart(2, '0');
-    var dd = String(d.getDate()).padStart(2, '0');
-    return d.getFullYear() + '.' + mm + '.' + dd;
-  }
-
-  function relevanceLabel(score){
-    if(score === null || score === undefined) return '-';
-    return Math.round(score * 100) + '%';
-  }
 
   function renderResults(){
     var wrap = document.getElementById('prior-art-results');
     if(currentResults.length === 0){ wrap.innerHTML = ''; return; }
     wrap.innerHTML =
       '<div class="section-head" style="margin-top:8px;"><h3 style="font-size:19px;">검색 결과 (' + currentResults.length + '건, 관련도순)</h3></div>' +
-      '<div class="resource-grid">' +
-      currentResults.map(function(r){
-        var note = r.ai_similarity_note
-          ? '<p class="pa-note">' + escapeHtml(r.ai_similarity_note) + '</p>'
-          : '<p class="pa-note pa-note-loading"><span class="spinner spinner-sm"></span>AI 유사점·차이점 분석 중...</p>';
-        return '' +
-          '<div class="resource-card pa-card">' +
-            '<div class="badges"><span class="resource-badge">관련도 ' + relevanceLabel(r.relevance_score) + '</span></div>' +
-            '<h4>' + escapeHtml(r.title || '(제목 없음)') + '</h4>' +
-            '<p style="font-size:12.5px;color:var(--muted);">출원인: ' + escapeHtml(r.applicant || '정보 없음') + (r.filing_date ? ' · 출원일: ' + formatDate(r.filing_date) : '') + '</p>' +
-            (r.application_number ? '<p style="font-size:12.5px;color:var(--muted);">출원번호: <strong style="color:var(--text);user-select:all;">' + escapeHtml(r.application_number) + '</strong></p>' : '') +
-            note +
-            (r.kipris_url ? '<a class="dl" href="' + escapeHtml(r.kipris_url) + '" target="_blank" rel="noopener">KIPRIS 특허검색 열기 → (출원번호를 검색창에 붙여넣어주세요)</a>' : '') +
-          '</div>';
-      }).join('') +
-      '</div>';
+      '<div class="resource-grid">' + renderPriorArtCards(currentResults, { showStartSpecButton: true }) + '</div>';
   }
 
-  async function pollSummarize(){
-    if(summarizing || !currentSearchId) return;
-    summarizing = true;
-    try {
-      var result = await supabaseClient.functions.invoke('prior-art-search', {
-        body: { action: 'summarize', search_id: currentSearchId }
-      });
-      if(result.error){
-        summarizing = false;
-        return;
-      }
-      var data = result.data;
-      (data.updated || []).forEach(function(u){
-        var target = currentResults.find(function(r){ return r.id === u.id; });
-        if(target) target.ai_similarity_note = u.ai_similarity_note;
-      });
-      renderResults();
-      summarizing = false;
-      if(!data.done){
-        setTimeout(pollSummarize, 800);
-      } else {
-        document.getElementById('progress-label').textContent = '완료되었습니다.';
-        document.getElementById('prior-art-progress').style.display = 'none';
-      }
-    } catch(e){
-      summarizing = false;
+  /* ---- 이 특허 기준으로 명세서 작성 시작: patent_projects row 생성 후 AI 명세서 작성 페이지로 이동 ---- */
+  document.getElementById('prior-art-results').addEventListener('click', async function(e){
+    var btn = e.target.closest('.start-spec-btn');
+    if(!btn) return;
+    if(!supabaseClient || !currentSession){ return; }
+    var originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '프로젝트 생성 중...';
+    var result = await supabaseClient.from('patent_projects').insert({
+      client_id: currentSession.user.id,
+      based_on_prior_art_id: btn.dataset.resultId
+    }).select().single();
+    if(result.error || !result.data){
+      btn.disabled = false;
+      btn.textContent = originalText;
+      alert('명세서 작성 프로젝트를 시작하지 못했습니다: ' + (result.error ? result.error.message : ''));
+      return;
     }
-  }
+    window.location.href = 'spec-writer.html?project=' + result.data.id;
+  });
 
   document.getElementById('prior-art-form').addEventListener('submit', async function(e){
     e.preventDefault();
@@ -223,42 +185,39 @@
     msg.textContent = '';
     btn.disabled = true;
     currentResults = [];
-    currentSearchId = null;
     document.getElementById('prior-art-results').innerHTML = '';
     document.getElementById('progress-label').textContent = '발명 내용을 분석하는 중입니다...';
     document.getElementById('prior-art-progress').style.display = 'block';
 
-    var result;
-    try {
-      result = await supabaseClient.functions.invoke('prior-art-search', {
-        body: { action: 'start', query_text: queryText }
-      });
-    } catch(err) {
-      document.getElementById('prior-art-progress').style.display = 'none';
-      msg.textContent = '검색 요청 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-      msg.className = 'form-msg error';
-      btn.disabled = false;
-      return;
-    }
-
-    btn.disabled = false;
-    var data = result.data;
-    if(result.error || !data || data.error){
-      document.getElementById('prior-art-progress').style.display = 'none';
-      msg.textContent = (data && data.error) ? data.error : '검색에 실패했습니다. 잠시 후 다시 시도해주세요.';
-      msg.className = 'form-msg error';
-      return;
-    }
-
-    currentSearchId = data.search_id;
-    currentResults = data.results || [];
-    if(data.warnings && data.warnings.length > 0){
-      msg.textContent = '일부 검색식에서 오류가 있었지만 검색은 완료되었습니다.';
-      msg.className = 'form-msg';
-    }
-    document.getElementById('progress-label').textContent = 'AI가 각 특허와의 유사점·차이점을 요약하는 중입니다...';
-    renderResults();
-    pollSummarize();
+    await runPriorArtSearch(queryText, null, {
+      onError: function(errMsg){
+        document.getElementById('prior-art-progress').style.display = 'none';
+        msg.textContent = errMsg;
+        msg.className = 'form-msg error';
+        btn.disabled = false;
+      },
+      onStart: function(startData){
+        btn.disabled = false;
+        if(startData.warnings && startData.warnings.length > 0){
+          msg.textContent = '일부 검색식에서 오류가 있었지만 검색은 완료되었습니다.';
+          msg.className = 'form-msg';
+        }
+        currentResults = startData.results || [];
+        document.getElementById('progress-label').textContent = 'AI가 각 특허와의 유사점·차이점을 요약하는 중입니다...';
+        renderResults();
+      },
+      onUpdate: function(updData){
+        (updData.updated || []).forEach(function(u){
+          var target = currentResults.find(function(r){ return r.id === u.id; });
+          if(target) target.ai_similarity_note = u.ai_similarity_note;
+        });
+        renderResults();
+      },
+      onDone: function(){
+        document.getElementById('progress-label').textContent = '완료되었습니다.';
+        document.getElementById('prior-art-progress').style.display = 'none';
+      }
+    });
   });
 
   function refreshPriorArtGate(){

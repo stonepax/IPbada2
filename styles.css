@@ -308,6 +308,35 @@ nav.main-nav a:hover{color:var(--blue);}
 .pa-card .pa-note{font-size:13.3px;color:var(--text);line-height:1.6;background:var(--bg-alt);border-radius:8px;padding:10px 12px;}
 .pa-card .pa-note-loading{color:var(--muted);display:flex;align-items:center;}
 
+/* ===== AI 명세서 작성: 3단계 스텝 UI ===== */
+.spec-steps{display:flex;justify-content:center;align-items:flex-start;max-width:520px;margin:0 auto 40px;}
+.spec-steps .spec-step{display:flex;flex-direction:column;align-items:center;flex:none;width:100px;}
+.spec-steps .spec-line{flex:1;height:2px;background:var(--border);margin-top:17px;}
+.spec-steps .num{
+  width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:13.5px;font-weight:800;background:var(--bg-alt);color:var(--muted);border:2px solid var(--border);
+}
+.spec-steps .spec-step.active .num{background:var(--blue);border-color:var(--blue);color:#fff;}
+.spec-steps .spec-step.done .num{background:var(--navy);border-color:var(--navy);color:#fff;}
+.spec-steps .spec-step.skip .num{opacity:.45;}
+.spec-steps .label{font-size:12px;color:var(--muted);margin-top:8px;text-align:center;}
+.spec-steps .spec-step.active .label{color:var(--navy);font-weight:700;}
+
+.spec-panel{max-width:640px;margin:0 auto;background:#fff;border:1px solid var(--border);border-radius:16px;padding:32px;box-shadow:var(--shadow);}
+.spec-panel h3{font-size:19px;margin-bottom:8px;}
+.spec-panel .spec-hint{font-size:13px;color:var(--muted);margin-bottom:16px;}
+.spec-panel textarea{
+  width:100%;border:1px solid var(--border);border-radius:9px;padding:13px 14px;font-size:14px;font-family:inherit;
+  min-height:140px;resize:vertical;margin-bottom:14px;
+}
+.spec-panel .spec-source{background:var(--blue-light);border-radius:10px;padding:12px 14px;font-size:12.5px;color:var(--navy);margin-bottom:16px;}
+.spec-panel .spec-source strong{display:block;margin-bottom:4px;}
+.spec-panel .spec-actions{display:flex;gap:10px;justify-content:flex-end;}
+.spec-panel .spec-actions .btn-ghost{flex:none;}
+.spec-panel .spec-actions .btn-primary,
+.spec-panel .spec-actions .btn-dark{flex:1;max-width:260px;}
+.spec-draft-loading{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13.5px;padding:14px 0;}
+
 .blog-detail{max-width:720px;margin:0 auto;}
 .blog-detail .back-link{display:inline-block;margin-bottom:20px;font-size:13.5px;font-weight:700;color:var(--blue);}
 .blog-detail .meta{font-size:12.5px;color:var(--muted);margin-bottom:10px;}
