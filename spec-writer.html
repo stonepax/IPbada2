@@ -163,7 +163,7 @@
     { key: 'existing_problem', label: '해결하려는 과제' },
     { key: 'drawings_description', label: '도면의 간단한 설명' },
     { key: 'detailed_description', label: '발명을 실시하기 위한 구체적인 내용' },
-    { key: 'claims_text', label: '특허청구범위' },
+    { key: 'claims_text', label: '특허청구범위', hint: 'AI가 제안하는 초안이며, 청구항은 변리사가 최종 확정합니다.' },
     { key: 'abstract_text', label: '요약서' }
   ];
 
@@ -262,7 +262,8 @@
       var field = s.single
         ? '<input type="text" class="spec-field" data-key="' + s.key + '" value="' + val + '">'
         : '<textarea class="spec-field" data-key="' + s.key + '">' + val + '</textarea>';
-      return '<div class="spec-section"><h4>' + escapeHtml(s.label) + '</h4>' + field + '</div>';
+      var hint = s.hint ? '<p class="spec-section-hint">' + escapeHtml(s.hint) + '</p>' : '';
+      return '<div class="spec-section"><h4>' + escapeHtml(s.label) + '</h4>' + hint + field + '</div>';
     }).join('');
 
     return '' +
@@ -460,6 +461,14 @@
           throw new Error((result.data && result.data.error) || '생성 실패');
         }
         project = result.data.project;
+        if(result.data.warnings && result.data.warnings.length > 0){
+          specSaveMsg = '일부 항목에 문체 검증을 통과하지 못한 표현이 남아있을 수 있습니다 (' +
+            result.data.warnings.join(', ') + '). 아래 내용을 확인 후 필요하면 직접 수정해주세요.';
+          specSaveError = true;
+        } else {
+          specSaveMsg = '';
+          specSaveError = false;
+        }
       } catch(e){
         specError = 'AI 명세서 초안 생성에 실패했습니다. 잠시 후 다시 시도해주세요.';
       }
