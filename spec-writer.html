@@ -288,12 +288,13 @@
       '</div>';
   }
 
-  // Claude 호출 1번짜리 생성은 Edge Function 실행 시간 제한(EarlyDrop)에 걸려서,
-  // 3단계(core -> description -> claims)로 나눠 순서대로 호출한다 (prior-art-search의
-  // start/summarize 배치 방식과 같은 원리).
+  // Claude 호출 1번짜리 생성은 Edge Function 실행 시간 제한(EarlyDrop)에 걸리고,
+  // "구체적인 내용"은 응답이 너무 길어져 잘리는 문제도 있어서, 4단계로 나눠
+  // 순서대로 호출한다 (prior-art-search의 start/summarize 배치 방식과 같은 원리).
   var SPEC_GEN_STAGES = [
     { action: 'core', label: '기본 정보(발명의 명칭·기술분야·배경기술·해결과제·요약서)를 작성하는 중...' },
-    { action: 'description', label: '도면의 간단한 설명과 구체적인 내용을 작성하는 중...' },
+    { action: 'drawings', label: '도면의 간단한 설명을 작성하는 중...' },
+    { action: 'detailed', label: '발명을 실시하기 위한 구체적인 내용을 작성하는 중...' },
     { action: 'claims', label: '특허청구범위 초안을 작성하는 중...' }
   ];
 
