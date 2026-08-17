@@ -244,7 +244,9 @@ async function runPriorArtSearch(queryText, projectId, callbacks){
   }
   var data = startResult.data;
   if(startResult.error || !data || data.error){
-    if(callbacks.onError) callbacks.onError((data && data.error) ? data.error : '검색에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    var msg = (data && data.error) ? data.error : '검색에 실패했습니다. 잠시 후 다시 시도해주세요.';
+    if(data && data.credit_exhausted) msg = '보유하신 선행기술조사 크레딧을 모두 사용하셨습니다. 유료 전환은 현재 준비 중입니다.';
+    if(callbacks.onError) callbacks.onError(msg, !!(data && data.credit_exhausted));
     return null;
   }
   if(callbacks.onStart) callbacks.onStart(data);
