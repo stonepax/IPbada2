@@ -162,6 +162,8 @@
     { key: 'tech_field', label: '기술분야' },
     { key: 'current_tech_level', label: '발명의 배경이 되는 기술' },
     { key: 'existing_problem', label: '해결하려는 과제' },
+    { key: 'solution_means', label: '과제의 해결 수단' },
+    { key: 'invention_effect', label: '발명의 효과' },
     { key: 'drawings_description', label: '도면의 간단한 설명' },
     { key: 'detailed_description', label: '발명을 실시하기 위한 구체적인 내용' },
     { key: 'claims_text', label: '특허청구범위', hint: 'AI가 제안하는 초안이며, 청구항은 변리사가 최종 확정합니다.' },
@@ -248,7 +250,7 @@
       return '' +
         '<div class="spec-panel" style="text-align:center;">' +
           '<h3>답변이 모두 저장되었습니다</h3>' +
-          '<p class="spec-hint">입력하신 내용을 바탕으로 AI가 명세서 초안 전체(발명의 명칭·기술분야·배경기술·해결과제·도면의 간단한 설명·구체적인 내용·청구범위·요약서)를 작성합니다.</p>' +
+          '<p class="spec-hint">입력하신 내용을 바탕으로 AI가 명세서 초안 전체(발명의 명칭·기술분야·배경기술·해결과제·과제의 해결 수단·발명의 효과·도면의 간단한 설명·구체적인 내용·청구범위·요약서)를 작성합니다.</p>' +
           (specError ? '<p class="form-msg error">' + escapeHtml(specError) + '</p>' : '') +
           (specGenerating ? '<div class="prior-art-progress" style="margin:16px 0;"><div class="spinner"></div><p>' + escapeHtml(specGenStage) + '</p></div>' : '') +
           '<div class="spec-actions" style="justify-content:center;">' +
@@ -289,10 +291,14 @@
   }
 
   // Claude 호출 1번짜리 생성은 Edge Function 실행 시간 제한(EarlyDrop)에 걸리고,
-  // "구체적인 내용"은 응답이 너무 길어져 잘리는 문제도 있어서, 4단계로 나눠
+  // "구체적인 내용"은 응답이 너무 길어져 잘리는 문제도 있어서, 5단계로 나눠
   // 순서대로 호출한다 (prior-art-search의 start/summarize 배치 방식과 같은 원리).
+  // "solution" 단계는 2·3단계에서 사용자가 채팅체로 입력한 원문(차별점/개선효과)을
+  // 그대로 문서에 노출시키던 문제를 고치기 위해 추가됐다 -- 원문을 참고자료로만
+  // 사용하고, "과제의 해결 수단"/"발명의 효과"는 AI가 정식 명세서 서술체로 다시 쓴다.
   var SPEC_GEN_STAGES = [
     { action: 'core', label: '기본 정보(발명의 명칭·기술분야·배경기술·해결과제·요약서)를 작성하는 중...' },
+    { action: 'solution', label: '과제의 해결 수단·발명의 효과를 작성하는 중...' },
     { action: 'drawings', label: '도면의 간단한 설명을 작성하는 중...' },
     { action: 'detailed', label: '발명을 실시하기 위한 구체적인 내용을 작성하는 중...' },
     { action: 'claims', label: '특허청구범위 초안을 작성하는 중...' }
@@ -360,8 +366,8 @@
         ['기술분야', project.tech_field],
         ['발명의 배경이 되는 기술', project.current_tech_level],
         ['해결하려는 과제', project.existing_problem],
-        ['과제의 해결 수단(선행기술과의 차이)', project.diff_from_prior_art],
-        ['발명의 효과', project.improvement_reason],
+        ['과제의 해결 수단', project.solution_means],
+        ['발명의 효과', project.invention_effect],
         ['도면의 간단한 설명', project.drawings_description],
         ['발명을 실시하기 위한 구체적인 내용', project.detailed_description],
         ['특허청구범위', project.claims_text],
