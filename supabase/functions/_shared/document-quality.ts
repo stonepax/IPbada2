@@ -37,6 +37,10 @@ export const BASE_FORBIDDEN_PATTERNS: { name: string; regex: RegExp }[] = [
   { name: "마크다운 볼드(**)", regex: /\*\*[^*\n]+\*\*/ },
   { name: "번호매김 기호(①②③...)", regex: /[①②③④⑤⑥⑦⑧⑨⑩]/ },
   { name: "대화 맥락 참조", regex: /(이전에|앞서)\s*(논의|말씀|언급)|말씀하신|말씀드린/ },
+  // "효과:", "권장 설계:" 같은 상담형 소제목 -- 줄 시작에 짧은 한글 단어 뒤 콜론
+  { name: "상담형 소제목(콜론으로 끝나는 한글 소제목)", regex: /(^|\n)\s*[가-힣][가-힣\s]{0,9}:(\s|$)/ },
+  // 완결된 문단이 아니라 글머리기호/번호 목록으로 나열한 경우
+  { name: "목록형 서술(글머리기호·번호 목록)", regex: /(^|\n)\s*(?:[-•·*]|\d+[.)])\s/ },
 ];
 
 // 문서 유형 설정을 받아 시스템 프롬프트에 넣을 공통 규칙 텍스트를 만든다.
@@ -90,12 +94,31 @@ export function buildQualitySystemPrompt(config: DocumentQualityConfig): string 
 }
 
 // 생성된 문서 필드들을 검사해 위반된 규칙 이름 목록을 반환한다 (비어있으면 통과).
-// 재생성은 기본적으로 시도하지 않는다 -- 과거 자동재시도를 넣었다가 Edge Function
-// 실행시간 제한(EarlyDrop)에 걸린 적이 있어, 경고만 남기고 호출부가 그 경고를
-// 사용자에게 보여주는 방식을 기본으로 한다. 시간 여유가 충분한 문서 유형에서만
-// 호출부에서 재시도 로직을 선택적으로 추가한다.
 export function checkDocumentQuality(spec: Record<string, unknown>, config: DocumentQualityConfig): string[] {
   const combined = Object.values(spec).filter((v) => typeof v === "string").join("\n");
   const patterns = [...BASE_FORBIDDEN_PATTERNS, ...config.forbiddenEndingPatterns];
   return patterns.filter((p) => p.regex.test(combined)).map((p) => p.name);
+}
+
+// 검증에 걸리면 최대 maxRetries회까지 재생성을 시도한다. 짧은 섹션(2048 토큰 이하)
+// 생성 단계에서만 사용할 것 -- 과거 4단계 전체(8192 토큰 단일 호출)에 자동재시도를
+// 넣었다가 Edge Function 실행시간 제한(EarlyDrop)에 걸린 적이 있어, 시간 여유가
+// 충분한 짧은 단계에만 선택적으로 적용한다. maxRetries=0이면 기존과 동일하게
+// 경고만 반환하고 재시도하지 않는다.
+export async function generateWithQualityRetry(
+  callModel: () => Promise<string>,
+  extractJson: (text: string) => Record<string, unknown>,
+  config: DocumentQualityConfig,
+  maxRetries: number,
+): Promise<{ spec: Record<string, unknown>; violations: string[]; attempts: number }> {
+  let attempts = 0;
+  let spec: Record<string, unknown>;
+  let violations: string[];
+  do {
+    attempts++;
+    const text = await callModel();
+    spec = extractJson(text);
+    violations = checkDocumentQuality(spec, config);
+  } while (violations.length > 0 && attempts <= maxRetries);
+  return { spec, violations, attempts };
 }
