@@ -160,10 +160,12 @@ function renderAuthUI(session){
   if(session && session.user){
     actions.innerHTML =
       '<span class="user-chip">' + session.user.email + '</span>' +
+      '<span class="credit-chip" id="credit-chip"></span>' +
       '<button class="btn btn-ghost" id="logout-btn" type="button">로그아웃</button>' + hamburgerHTML;
     document.getElementById('logout-btn').addEventListener('click', async function(){
       if(supabaseClient) await supabaseClient.auth.signOut();
     });
+    renderCreditChip(session);
   } else {
     actions.innerHTML =
       '<a class="btn btn-ghost" href="#login" data-auth-open="login">로그인</a>' +
@@ -181,6 +183,39 @@ function renderAuthUI(session){
       if(panel) panel.style.display = 'none';
     }
   }
+}
+
+// 헤더에 잔여 크레딧을 표시한다. 관리자는 무제한이라 조회 없이 바로 표시하고,
+// 일반 회원은 user_credits를 본인 것만 읽어온다(RLS "본인 크레딧 조회" 정책).
+// 만료된 크레딧은 DB에 저장된 balance가 남아있어도 0으로 취급한다 -- 실제
+// 차감 로직(Postgres 함수 deduct_credit)도 만료 여부를 같은 방식으로 걸러낸다.
+async function renderCreditChip(session){
+  var chip = document.getElementById('credit-chip');
+  if(!chip || !supabaseClient) return;
+  if(session.user.email === ADMIN_EMAIL){
+    chip.textContent = '크레딧 무제한';
+    return;
+  }
+  var result = await supabaseClient.from('user_credits')
+    .select('credit_type, balance, expires_at')
+    .eq('user_id', session.user.id);
+  if(result.error || !result.data || result.data.length === 0){ chip.textContent = ''; return; }
+
+  var search = result.data.find(function(r){ return r.credit_type === 'prior_art_search'; });
+  var spec = result.data.find(function(r){ return r.credit_type === 'spec_drafting'; });
+  var expiresAt = (search && search.expires_at) || (spec && spec.expires_at) || null;
+  var expired = !!(expiresAt && new Date(expiresAt).getTime() < Date.now());
+  var searchBalance = (search && !expired) ? search.balance : 0;
+  var specBalance = (spec && !expired) ? spec.balance : 0;
+
+  var text = '선행기술조사 ' + searchBalance + '회 · 명세서작성 ' + specBalance + '회 남음';
+  if(expired){
+    text += ' (만료됨)';
+  } else if(expiresAt){
+    var daysLeft = Math.max(0, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / (24 * 3600 * 1000)));
+    text += ' (' + daysLeft + '일 후 만료)';
+  }
+  chip.textContent = text;
 }
 
 if(supabaseClient){
@@ -244,7 +279,9 @@ async function runPriorArtSearch(queryText, projectId, callbacks){
   }
   var data = startResult.data;
   if(startResult.error || !data || data.error){
-    if(callbacks.onError) callbacks.onError((data && data.error) ? data.error : '검색에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    var msg = (data && data.error) ? data.error : '검색에 실패했습니다. 잠시 후 다시 시도해주세요.';
+    if(data && data.credit_exhausted) msg = '보유하신 선행기술조사 크레딧을 모두 사용하셨습니다. 유료 전환은 현재 준비 중입니다.';
+    if(callbacks.onError) callbacks.onError(msg, !!(data && data.credit_exhausted));
     return null;
   }
   if(callbacks.onStart) callbacks.onStart(data);
