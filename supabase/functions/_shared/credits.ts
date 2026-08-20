@@ -8,7 +8,7 @@
 // 대시보드에 자기완결적 파일 하나로 붙여넣어 배포하는 방식이므로, 이 모듈의
 // 내용은 각 Edge Function 소스에 조립되어 포함된다(런타임 import가 아님).
 //
-// 크레딧 지급 수량(가입 시 선행기술조사 3회 / 명세서작성 1회)은 잠정치다.
+// 크레딧 지급 수량(가입 시 선행기술조사 10회 / 명세서작성 3회)은 잠정치다.
 // "과제의 해결 수단"/"발명의 효과" 채팅체 혼입 문제(별도 품질개선 작업)로 인한
 // 재시도 원가가 아직 불안정하므로, 품질개선 PR 병합 후 실사용 데이터를 보고
 // 재조정할 수 있다.
@@ -18,6 +18,15 @@ export type CreditType = "prior_art_search" | "spec_drafting";
 export interface CreditCheckResult {
   ok: boolean;
   balance: number;
+}
+
+// 관리자 계정은 사용횟수 제한 없이 전 기능을 쓸 수 있다. 다른 곳(patent_projects,
+// prior_art_searches의 RLS 정책)에서도 같은 이메일로 관리자를 식별하는 기존
+// 패턴을 그대로 따른다.
+export const ADMIN_EMAIL = "stonepax@gmail.com";
+
+export function isAdminUser(email: string | null | undefined): boolean {
+  return email === ADMIN_EMAIL;
 }
 
 // 잔액만 조회한다 (차감 없음). "AI명세서작성" 5단계 파이프라인의 첫 호출(core)에서
