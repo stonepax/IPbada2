@@ -159,8 +159,10 @@ function renderAuthUI(session){
   var hamburgerHTML = '<button class="hamburger" aria-label="메뉴 열기"><span></span><span></span><span></span></button>';
   if(session && session.user){
     actions.innerHTML =
-      '<span class="user-chip">' + session.user.email + '</span>' +
-      '<span class="credit-chip" id="credit-chip"></span>' +
+      '<span class="user-info">' +
+        '<span class="user-chip">' + session.user.email + '</span>' +
+        '<span class="credit-chip" id="credit-chip"></span>' +
+      '</span>' +
       '<button class="btn btn-ghost" id="logout-btn" type="button">로그아웃</button>' + hamburgerHTML;
     document.getElementById('logout-btn').addEventListener('click', async function(){
       if(supabaseClient) await supabaseClient.auth.signOut();
