@@ -65,7 +65,7 @@ export async function deductCredit(
     p_ref_id: refId,
   });
   if (error || !data || data.length === 0) return { ok: false, balance: 0 };
-  return { ok: data[0].ok, balance: data[0].balance };
+  return { ok: data[0].ok, balance: data[0].remaining_balance };
 }
 
 // 사용 실패 시 크레딧 1개를 환불한다 (예: 선행기술조사 시작 후 KIPRIS 검색 자체가
