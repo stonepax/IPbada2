@@ -460,8 +460,9 @@ footer{background:var(--navy);color:#9fb3d1;padding:56px 24px 24px;}
 .auth-msg{font-size:13px;min-height:18px;}
 .auth-msg.error{color:#d92d20;}
 .auth-msg.success{color:#0a7a4a;}
+.user-info{display:flex;flex-direction:column;align-items:flex-end;line-height:1.35;}
 .user-chip{font-size:13.5px;font-weight:700;color:var(--navy);}
-.credit-chip{font-size:12.5px;color:var(--muted);white-space:nowrap;}
+.credit-chip{font-size:12px;color:var(--muted);white-space:nowrap;}
 .form-msg{font-size:13.5px;margin-top:12px;text-align:center;min-height:18px;}
 .form-msg.error{color:#d92d20;}
 .form-msg.success{color:#0a7a4a;}
