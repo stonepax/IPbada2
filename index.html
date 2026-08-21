@@ -212,6 +212,7 @@
     <select class="full" name="inquiry_type" required>
       <option value="">문의 유형을 선택하세요</option>
       <option>회원가입·이용 문의</option>
+      <option>크레딧 추가 필요</option>
       <option>제휴·광고 문의</option>
       <option>채용 공고 등록</option>
       <option>IP마켓 거래 문의</option>
@@ -271,6 +272,17 @@
 <script>
   /* ---- Contact form -> Supabase table "inquiries" ---- */
   var contactForm = document.getElementById('contact-form');
+
+  // 마이페이지의 "관리자에게 문의" 링크(index.html?inquiry=credit_request#jobs-detail)로
+  // 들어온 경우, 문의 유형을 미리 선택해준다.
+  (function prefillInquiryType(){
+    var params = new URLSearchParams(window.location.search);
+    var inquiry = params.get('inquiry');
+    if(inquiry === 'credit_request'){
+      contactForm.inquiry_type.value = '크레딧 추가 필요';
+    }
+  })();
+
   contactForm.addEventListener('submit', async function(e){
     e.preventDefault();
     var btn = contactForm.querySelector('button[type="submit"]');

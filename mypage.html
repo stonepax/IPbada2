@@ -27,29 +27,13 @@
       <h3 style="font-size:17px;margin-bottom:16px;">크레딧 현황</h3>
       <div id="mypage-credits" class="mypage-credit-list"></div>
 
-      <!-- 안내 문구: 필요 시 이 한 줄만 수정하면 된다 -->
-      <p class="mypage-support-notice" id="mypage-support-notice">회원가입에 문제가 있거나 추가로 선행기술조사·명세서작성이 필요하신 경우 관리자에게 문의해주세요. 영업일 기준 1~2일 내 답변드립니다.</p>
-      <button type="button" class="btn btn-dark" id="open-support-modal">관리자에게 문의</button>
+      <!-- 안내 문구: 필요 시 이 한 줄만 수정하면 된다. "관리자에게 문의" 링크는
+           홈페이지 하단의 기존 문의하기 섹션(#jobs-detail)으로 이동하면서
+           문의 유형을 "크레딧 추가 필요"로 미리 선택해준다. -->
+      <p class="mypage-support-notice" id="mypage-support-notice">회원가입에 문제가 있거나 추가로 선행기술조사·명세서작성이 필요하신 경우 <a href="index.html?inquiry=credit_request#jobs-detail" style="color:var(--blue);font-weight:700;">관리자에게 문의</a>해주세요. 영업일 기준 1~2일 내 답변드립니다.</p>
     </div>
   </div>
 </section>
-
-<div class="modal-overlay" id="support-modal">
-  <div class="modal-box">
-    <button class="modal-close" id="support-modal-close" type="button" aria-label="닫기">✕</button>
-    <h3 style="font-size:17px;margin-bottom:18px;">관리자에게 문의</h3>
-    <form class="support-form" id="support-form">
-      <div class="support-category-group">
-        <label><input type="radio" name="category" value="signup_issue" checked> 회원가입 문제</label>
-        <label><input type="radio" name="category" value="credit_request"> 크레딧 추가 필요</label>
-        <label><input type="radio" name="category" value="other"> 기타</label>
-      </div>
-      <textarea name="message" id="support-message" placeholder="문의하실 내용을 입력해주세요." required maxlength="3000"></textarea>
-      <button type="submit" class="btn btn-primary">제출</button>
-      <p class="form-msg" id="support-msg"></p>
-    </form>
-  </div>
-</div>
 
 <footer>
   <div class="footer-grid">
@@ -83,7 +67,10 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="app.js"></script>
 <script>
-  /* ---- 마이페이지: 로그인 게이트 + 크레딧 현황 표시 + 관리자 문의 모달 ---- */
+  /* ---- 마이페이지: 로그인 게이트 + 크레딧 현황 표시 ----
+     관리자 문의는 별도 모달을 새로 만들지 않고, 홈페이지 하단의 기존
+     문의하기 섹션(index.html#jobs-detail, inquiries 테이블)을 그대로
+     재사용한다 -- 안내문의 링크가 그리로 이동시킨다. ---- */
 
   function renderMypageGate(){
     var isLoggedIn = !!currentSession;
@@ -126,45 +113,6 @@
     var spec = result.data.find(function(r){ return r.credit_type === 'spec_drafting'; });
     wrap.innerHTML = mypageCreditRow('선행기술조사', search) + mypageCreditRow('AI 명세서 작성', spec);
   }
-
-  /* ---- 관리자 문의 모달 ---- */
-  document.getElementById('open-support-modal').addEventListener('click', function(){
-    document.getElementById('support-modal').classList.add('open');
-  });
-  document.getElementById('support-modal-close').addEventListener('click', function(){
-    document.getElementById('support-modal').classList.remove('open');
-  });
-  document.getElementById('support-modal').addEventListener('click', function(e){
-    if(e.target === document.getElementById('support-modal')) document.getElementById('support-modal').classList.remove('open');
-  });
-
-  document.getElementById('support-form').addEventListener('submit', async function(e){
-    e.preventDefault();
-    var msg = document.getElementById('support-msg');
-    if(!supabaseClient || !currentSession){ msg.textContent = '로그인이 필요합니다.'; msg.className = 'form-msg error'; return; }
-    var category = e.target.category.value;
-    var message = e.target.message.value.trim();
-    if(!message){ msg.textContent = '문의 내용을 입력해주세요.'; msg.className = 'form-msg error'; return; }
-    var submitBtn = e.target.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    msg.textContent = '접수 중...'; msg.className = 'form-msg';
-    var result = await supabaseClient.functions.invoke('submit-support-request', {
-      body: { category: category, message: message }
-    });
-    submitBtn.disabled = false;
-    if(result.error || !result.data || result.data.error){
-      msg.textContent = (result.data && result.data.error) ? result.data.error : '문의 접수에 실패했습니다. 잠시 후 다시 시도해주세요.';
-      msg.className = 'form-msg error';
-      return;
-    }
-    msg.textContent = '문의가 접수되었습니다. 영업일 기준 1~2일 내 답변드립니다.';
-    msg.className = 'form-msg success';
-    e.target.reset();
-    setTimeout(function(){
-      document.getElementById('support-modal').classList.remove('open');
-      msg.textContent = '';
-    }, 1800);
-  });
 
   if(supabaseClient){
     supabaseClient.auth.onAuthStateChange(function(){ renderMypageGate(); });

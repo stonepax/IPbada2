@@ -308,15 +308,7 @@ nav.main-nav a:hover{color:var(--blue);}
 .mypage-credit-row .label{font-size:14px;color:var(--text);font-weight:600;}
 .mypage-credit-row .value{font-size:20px;font-weight:800;color:var(--navy);}
 .mypage-credit-row .expiry{font-size:12px;color:var(--muted);margin-left:8px;font-weight:500;}
-.mypage-support-notice{font-size:13.5px;color:var(--muted);line-height:1.6;border-top:1px solid var(--border);padding-top:20px;margin-bottom:16px;}
-.support-form{display:flex;flex-direction:column;gap:14px;}
-.support-category-group{display:flex;flex-direction:column;gap:8px;font-size:14px;}
-.support-category-group label{display:flex;align-items:center;gap:8px;cursor:pointer;}
-.support-form textarea{
-  width:100%;border:1px solid var(--border);border-radius:9px;padding:13px 14px;font-size:14px;font-family:inherit;
-  min-height:120px;resize:vertical;
-}
-.support-form button{width:100%;}
+.mypage-support-notice{font-size:13.5px;color:var(--muted);line-height:1.6;border-top:1px solid var(--border);padding-top:20px;margin-bottom:0;}
 .spinner{
   width:34px;height:34px;border-radius:50%;margin:0 auto;
   border:3px solid var(--blue-light);border-top-color:var(--blue);
