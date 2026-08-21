@@ -51,13 +51,15 @@ header{
   display:flex;align-items:center;justify-content:space-between;
   padding:14px 24px;max-width:1180px;margin:0 auto;
 }
-.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:20px;color:var(--navy);letter-spacing:.2px;margin-right:40px;}
+.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:20px;color:var(--navy);letter-spacing:.2px;margin-right:28px;flex:none;white-space:nowrap;}
 .logo .mark{
   width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--blue),#1746b3);
   display:inline-block;flex:none;
 }
-nav.main-nav{display:flex;gap:28px;}
-nav.main-nav a{font-size:14.5px;font-weight:600;color:var(--text);padding:8px 2px;}
+/* 로그인 시 이메일+크레딧 표시가 붙어 header-inner 폭이 빠듯해지므로, 로고 여백만큼은
+   nav 간격을 줄여 상쇄한다 (총 폭은 오히려 기존보다 여유가 생긴다) */
+nav.main-nav{display:flex;gap:20px;}
+nav.main-nav a{font-size:14.5px;font-weight:600;color:var(--text);padding:8px 2px;white-space:nowrap;}
 nav.main-nav a:hover{color:var(--blue);}
 
 /* ===== Nav dropdown (예: 인사이트) ===== */
@@ -298,6 +300,23 @@ nav.main-nav a:hover{color:var(--blue);}
 .prior-art-progress{max-width:520px;margin:0 auto 32px;text-align:center;}
 .prior-art-progress p{font-size:14px;color:var(--text);margin-top:14px;}
 .prior-art-progress .progress-sub{font-size:12.5px;color:var(--muted);margin-top:6px;}
+
+/* ===== 마이페이지 ===== */
+.mypage-panel{max-width:640px;margin:0 auto 28px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:28px;box-shadow:var(--shadow);}
+.mypage-credit-list{display:flex;flex-direction:column;gap:10px;margin-bottom:22px;}
+.mypage-credit-row{display:flex;justify-content:space-between;align-items:baseline;padding:14px 16px;background:var(--bg-alt);border-radius:10px;}
+.mypage-credit-row .label{font-size:14px;color:var(--text);font-weight:600;}
+.mypage-credit-row .value{font-size:20px;font-weight:800;color:var(--navy);}
+.mypage-credit-row .expiry{font-size:12px;color:var(--muted);margin-left:8px;font-weight:500;}
+.mypage-support-notice{font-size:13.5px;color:var(--muted);line-height:1.6;border-top:1px solid var(--border);padding-top:20px;margin-bottom:16px;}
+.support-form{display:flex;flex-direction:column;gap:14px;}
+.support-category-group{display:flex;flex-direction:column;gap:8px;font-size:14px;}
+.support-category-group label{display:flex;align-items:center;gap:8px;cursor:pointer;}
+.support-form textarea{
+  width:100%;border:1px solid var(--border);border-radius:9px;padding:13px 14px;font-size:14px;font-family:inherit;
+  min-height:120px;resize:vertical;
+}
+.support-form button{width:100%;}
 .spinner{
   width:34px;height:34px;border-radius:50%;margin:0 auto;
   border:3px solid var(--blue-light);border-top-color:var(--blue);
@@ -461,8 +480,9 @@ footer{background:var(--navy);color:#9fb3d1;padding:56px 24px 24px;}
 .auth-msg.error{color:#d92d20;}
 .auth-msg.success{color:#0a7a4a;}
 .user-info{display:flex;flex-direction:column;align-items:flex-end;line-height:1.35;}
-.user-chip{font-size:13.5px;font-weight:700;color:var(--navy);}
-.credit-chip{font-size:12px;color:var(--muted);white-space:nowrap;}
+.user-chip{font-size:13.5px;font-weight:700;color:var(--navy);white-space:nowrap;}
+.credit-chip{font-size:12px;color:var(--muted);white-space:nowrap;text-decoration:none;}
+.credit-chip:hover{text-decoration:underline;}
 .form-msg{font-size:13.5px;margin-top:12px;text-align:center;min-height:18px;}
 .form-msg.error{color:#d92d20;}
 .form-msg.success{color:#0a7a4a;}
