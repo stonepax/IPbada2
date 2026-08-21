@@ -51,7 +51,7 @@ header{
   display:flex;align-items:center;justify-content:space-between;
   padding:14px 24px;max-width:1180px;margin:0 auto;
 }
-.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:20px;color:var(--navy);letter-spacing:.2px;}
+.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:20px;color:var(--navy);letter-spacing:.2px;margin-right:40px;}
 .logo .mark{
   width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--blue),#1746b3);
   display:inline-block;flex:none;
