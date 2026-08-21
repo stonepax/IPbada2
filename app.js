@@ -69,6 +69,11 @@ var currentSession = null;
 function renderAuthUI(session){
   currentSession = session;
   var actions = document.getElementById('auth-actions');
+  // 헤더가 아직 fetch로 삽입되기 전이면 그릴 DOM이 없다. currentSession은 이미
+  // 위에서 갱신했으므로, 페이지별 인라인 스크립트가 각자 구독하는 onAuthStateChange가
+  // 이 값을 읽어도 안전하다 -- 헤더가 삽입되면 loadHeader()가 이 함수를 다시 불러
+  // 실제 UI를 그린다.
+  if(!actions) return;
   var hamburgerHTML = '<button class="hamburger" aria-label="메뉴 열기"><span></span><span></span><span></span></button>';
   if(session && session.user){
     actions.innerHTML =
@@ -133,10 +138,22 @@ async function renderCreditChip(session){
   chip.textContent = text;
 }
 
+// currentSession 갱신은 헤더 삽입 여부와 무관하게 항상 즉시 이뤄져야 한다 --
+// prior-art.html/spec-writer.html/blog.html 등 여러 페이지가 각자 자기 자신의
+// onAuthStateChange를 별도로 구독해 이 전역값을 읽기 때문에(로그인 게이트 표시 등),
+// 헤더 fetch가 끝날 때까지 currentSession 설정이 늦어지면 그 페이지들이 경쟁 상태에
+// 빠진다. 그래서 이 구독은 initHeaderUI()가 아니라 여기 최상위에서 즉시 시작하고,
+// renderAuthUI 자신은 헤더 DOM이 아직 없으면(위 참고) 그리기만 건너뛴다 -- 헤더가
+// 삽입된 뒤 loadHeader()가 renderAuthUI(currentSession)을 한 번 더 호출해 그린다.
+if(supabaseClient){
+  supabaseClient.auth.onAuthStateChange(function(_event, session){ renderAuthUI(session); });
+  supabaseClient.auth.getSession().then(function(res){ renderAuthUI(res.data.session); });
+}
+
 /* ---- 헤더/인증모달은 header.html을 fetch로 가져와 삽입한다 (8개 페이지 중복 제거).
-   이 DOM에 의존하는 모든 바인딩(햄버거, 드롭다운, 로그인/가입/재설정 폼, 인증 상태 구독)은
-   삽입이 끝난 뒤 initHeaderUI()에서 한 번에 실행해야 한다 -- 삽입 전에 실행하면
-   해당 엘리먼트가 아직 DOM에 없어 조용히 실패한다. ---- */
+   이 DOM에 의존하는 모든 바인딩(햄버거, 드롭다운, 로그인/가입/재설정 폼)은 삽입이
+   끝난 뒤 initHeaderUI()에서 한 번에 실행해야 한다 -- 삽입 전에 실행하면 해당
+   엘리먼트가 아직 DOM에 없어 조용히 실패한다. ---- */
 function initHeaderUI(){
   authModal = document.getElementById('auth-modal');
   bindHamburger();
@@ -225,10 +242,10 @@ function initHeaderUI(){
     else { msg.textContent = '이메일로 재설정 링크를 보냈습니다. 메일함을 확인해주세요.'; msg.className = 'auth-msg success'; }
   });
 
-  if(supabaseClient){
-    supabaseClient.auth.onAuthStateChange(function(_event, session){ renderAuthUI(session); });
-    supabaseClient.auth.getSession().then(function(res){ renderAuthUI(res.data.session); });
-  }
+  // 구독은 이미 최상위(스크립트 로드 시점)에서 시작됐으므로 여기서 다시 구독하지
+  // 않는다. 다만 그 구독이 헤더 삽입 전에 먼저 발화해 currentSession만 갱신하고
+  // DOM은 못 그렸을 수 있으므로, 지금 알고 있는 currentSession으로 한 번 더 그린다.
+  renderAuthUI(currentSession);
 }
 
 // header.html은 다른 7개 페이지 기준으로 "index.html#..." 절대경로 앵커를 쓴다.
