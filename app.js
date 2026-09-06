@@ -248,27 +248,46 @@ function initHeaderUI(){
   renderAuthUI(currentSession);
 }
 
-// header.html은 다른 7개 페이지 기준으로 "index.html#..." 절대경로 앵커를 쓴다.
-// index.html 자신에서는 그대로 두면 클릭할 때마다 전체 새로고침이 일어나므로,
+// header.html/footer.html은 다른 페이지 기준으로 "index.html#..." 절대경로 앵커를
+// 쓴다. index.html 자신에서는 그대로 두면 클릭할 때마다 전체 새로고침이 일어나므로,
 // 홈페이지에서만 앵커를 상대경로(#...)로 바꿔 매끄러운 스크롤이 되게 한다.
+function rewriteForHome(html){
+  var path = window.location.pathname;
+  var isHome = path === '/' || /\/?index\.html$/.test(path);
+  if(!isHome) return html;
+  return html
+    .replace(/href="index\.html" class="logo"/g, 'href="#top" class="logo"')
+    .replace(/href="index\.html#/g, 'href="#');
+}
+
 function loadHeader(){
   var root = document.getElementById('site-header-root');
   if(!root) return;
   fetch('header.html').then(function(res){ return res.text(); }).then(function(html){
-    var path = window.location.pathname;
-    var isHome = path === '/' || /\/?index\.html$/.test(path);
-    if(isHome){
-      html = html
-        .replace('href="index.html" class="logo"', 'href="#top" class="logo"')
-        .replace(/href="index\.html#/g, 'href="#');
-    }
-    root.outerHTML = html;
+    root.outerHTML = rewriteForHome(html);
     initHeaderUI();
   }).catch(function(err){
     console.error('헤더 로드 실패:', err);
   });
 }
 loadHeader();
+
+// 8개+ 페이지의 footer가 마지막 한 줄(법적 고지 문구)만 빼고 전부 동일했던 것을
+// footer.html 하나로 합쳤다. 그 한 줄만 페이지마다 다르므로, placeholder의
+// data-disclaimer 속성에 넣어두고 주입 후 #footer-disclaimer에 옮겨 심는다.
+function loadFooter(){
+  var root = document.getElementById('site-footer-root');
+  if(!root) return;
+  var disclaimer = root.dataset.disclaimer || '';
+  fetch('footer.html').then(function(res){ return res.text(); }).then(function(html){
+    root.outerHTML = rewriteForHome(html);
+    var d = document.getElementById('footer-disclaimer');
+    if(d) d.textContent = disclaimer;
+  }).catch(function(err){
+    console.error('푸터 로드 실패:', err);
+  });
+}
+loadFooter();
 
 /* ---- 선행기술조사 공용 헬퍼 (prior-art.html / spec-writer.html이 함께 사용) ----
    KIPRIS/Voyage/Claude 파이프라인은 Edge Function "prior-art-search" 하나에만 있고,
