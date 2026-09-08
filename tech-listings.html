@@ -11,7 +11,7 @@
 
 <div id="site-header-root"></div>
 
-<section class="section" id="top">
+<section class="section" id="listing-list-view">
   <div class="section-head">
     <span class="eyebrow">IP Market</span>
     <h2>특허기술거래·기술이전라이선스</h2>
@@ -35,6 +35,25 @@
     <p class="resource-empty">불러오는 중입니다...</p>
   </div>
 </section>
+
+<!-- 매물 상세 -->
+<section class="section" id="listing-detail-view" style="display:none;">
+  <div id="listing-detail-content" style="max-width:720px;margin:0 auto;"></div>
+</section>
+
+<!-- 매물 문의 모달 -->
+<div class="modal-overlay" id="inquiry-modal">
+  <div class="modal-box" style="max-width:480px;">
+    <button class="modal-close" id="inquiry-modal-close" type="button" aria-label="닫기">✕</button>
+    <h3 style="font-size:17px;margin-bottom:8px;">매물 문의하기</h3>
+    <p style="font-size:12.5px;color:var(--muted);margin-bottom:16px;">문의 내용은 등록자에게 이메일로 전달되며, 회원님의 연락처는 등록자에게 직접 노출되지 않습니다. 등록자가 관심이 있으면 직접 연락드립니다.</p>
+    <form id="inquiry-form" style="display:flex;flex-direction:column;gap:12px;">
+      <textarea name="message" id="inquiry-message" placeholder="문의하실 내용을 입력해주세요." required maxlength="2000" style="border:1px solid var(--border);border-radius:9px;padding:13px 14px;font-size:14px;font-family:inherit;min-height:120px;resize:vertical;"></textarea>
+      <button type="submit" class="btn btn-primary">문의 보내기</button>
+      <p class="form-msg" id="inquiry-form-msg"></p>
+    </form>
+  </div>
+</div>
 
 <!-- 매물 등록 모달 -->
 <div class="modal-overlay" id="listing-modal">
@@ -86,12 +105,12 @@
     grid.innerHTML = filtered.map(function(l){
       var tags = (l.industry_tags || []).map(function(t){ return '<span class="resource-badge">' + escapeHtml(t) + '</span>'; }).join('');
       return '' +
-        '<div class="resource-card">' +
+        '<a class="resource-card" href="tech-listings.html?listing=' + l.id + '">' +
           '<div class="badges">' + tags + '<span class="resource-badge stage">' + (STATUS_LABEL[l.status] || l.status) + '</span></div>' +
           '<h4>' + escapeHtml(l.title) + '</h4>' +
           '<p>' + escapeHtml((l.description || '').slice(0, 80)) + ((l.description || '').length > 80 ? '…' : '') + '</p>' +
           '<span class="dl" style="font-size:12px;color:var(--muted);">등록일: ' + paFormatDate(l.created_at) + '</span>' +
-        '</div>';
+        '</a>';
     }).join('');
   }
 
@@ -189,9 +208,93 @@
     var isLoggedIn = !!currentSession;
     document.getElementById('open-listing-form').style.display = isLoggedIn ? 'inline-block' : 'none';
     if(isLoggedIn) loadPrefillOptions(currentSession);
+    if(currentDetailListing) renderListingDetail();
   }
 
-  loadListings();
+  /* ---- 매물 상세 + 문의하기 ---- */
+  var listingId = new URLSearchParams(window.location.search).get('listing');
+  var currentDetailListing = null;
+
+  async function loadListingDetail(id){
+    document.getElementById('listing-list-view').style.display = 'none';
+    var detailSection = document.getElementById('listing-detail-view');
+    var content = document.getElementById('listing-detail-content');
+    detailSection.style.display = 'block';
+    content.innerHTML = '<p class="resource-empty">불러오는 중입니다...</p>';
+    if(!supabaseClient){ content.innerHTML = '<p class="resource-empty">서비스에 연결할 수 없습니다.</p>'; return; }
+    var result = await supabaseClient.from('tech_listings').select('*').eq('id', id).single();
+    if(result.error || !result.data){
+      content.innerHTML = '<a href="tech-listings.html" style="color:var(--blue);font-weight:700;font-size:13.5px;">← 목록으로</a><p class="resource-empty">매물을 찾을 수 없습니다.</p>';
+      return;
+    }
+    currentDetailListing = result.data;
+    renderListingDetail();
+  }
+
+  function renderListingDetail(){
+    var l = currentDetailListing;
+    var content = document.getElementById('listing-detail-content');
+    var tags = (l.industry_tags || []).map(function(t){ return '<span class="resource-badge">' + escapeHtml(t) + '</span>'; }).join('');
+    var isOwner = !!(currentSession && currentSession.user.id === l.user_id);
+    var contactHtml;
+    if(isOwner){
+      contactHtml = '<p style="font-size:13px;color:var(--muted);">내가 등록한 매물입니다. 받은 문의는 마이페이지에서 확인하세요.</p>';
+    } else if(!currentSession){
+      contactHtml = '<a class="btn btn-primary" href="#login" data-auth-open="login">로그인하고 문의하기</a>';
+    } else {
+      contactHtml = '<button type="button" class="btn btn-primary" id="open-inquiry-modal">연락하기</button>';
+    }
+    content.innerHTML =
+      '<a href="tech-listings.html" style="color:var(--blue);font-weight:700;font-size:13.5px;">← 목록으로</a>' +
+      '<div class="badges" style="margin:16px 0 10px;">' + tags + '<span class="resource-badge stage">' + (STATUS_LABEL[l.status] || l.status) + '</span></div>' +
+      '<h2 style="margin-bottom:8px;">' + escapeHtml(l.title) + '</h2>' +
+      '<p style="font-size:13px;color:var(--muted);margin-bottom:20px;">' + (l.listing_type === 'sale' ? '매매' : '라이선스') + ' · 등록일 ' + paFormatDate(l.created_at) + (l.patent_number ? ' · 특허번호 ' + escapeHtml(l.patent_number) : '') + '</p>' +
+      '<p style="white-space:pre-wrap;line-height:1.7;margin-bottom:24px;">' + escapeHtml(l.description) + '</p>' +
+      contactHtml;
+
+    var openBtn = document.getElementById('open-inquiry-modal');
+    if(openBtn) openBtn.addEventListener('click', function(){ document.getElementById('inquiry-modal').classList.add('open'); });
+  }
+
+  document.getElementById('inquiry-modal-close').addEventListener('click', function(){
+    document.getElementById('inquiry-modal').classList.remove('open');
+  });
+  document.getElementById('inquiry-modal').addEventListener('click', function(e){
+    if(e.target === document.getElementById('inquiry-modal')) document.getElementById('inquiry-modal').classList.remove('open');
+  });
+
+  document.getElementById('inquiry-form').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var msg = document.getElementById('inquiry-form-msg');
+    if(!supabaseClient || !currentSession || !currentDetailListing){ msg.textContent = '로그인이 필요합니다.'; msg.className = 'form-msg error'; return; }
+    var message = document.getElementById('inquiry-message').value.trim();
+    if(!message){ msg.textContent = '문의 내용을 입력해주세요.'; msg.className = 'form-msg error'; return; }
+    var submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    msg.textContent = '전송 중...'; msg.className = 'form-msg';
+    var result = await supabaseClient.functions.invoke('submit-listing-inquiry', {
+      body: { listing_id: currentDetailListing.id, message: message }
+    });
+    submitBtn.disabled = false;
+    if(result.error || !result.data || result.data.error){
+      msg.textContent = (result.data && result.data.error) ? result.data.error : '문의 전송에 실패했습니다. 잠시 후 다시 시도해주세요.';
+      msg.className = 'form-msg error';
+      return;
+    }
+    msg.textContent = '문의가 전송되었습니다.';
+    msg.className = 'form-msg success';
+    e.target.reset();
+    setTimeout(function(){
+      document.getElementById('inquiry-modal').classList.remove('open');
+      msg.textContent = '';
+    }, 1800);
+  });
+
+  if(listingId){
+    loadListingDetail(listingId);
+  } else {
+    loadListings();
+  }
 
   if(supabaseClient){
     supabaseClient.auth.onAuthStateChange(function(){ refreshListingAuthUI(); });
