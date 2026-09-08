@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>특허기술거래·기술이전라이선스 | IP바다</title>
+<meta name="description" content="보유 특허·기술을 게시하고, 원하는 거래·라이선스 상대를 찾아보세요.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="site-header-root"></div>
+
+<section class="section" id="top">
+  <div class="section-head">
+    <span class="eyebrow">IP Market</span>
+    <h2>특허기술거래·기술이전라이선스</h2>
+    <p>보유 특허·기술을 게시하고, 원하는 거래·라이선스 상대를 찾아보세요.</p>
+  </div>
+
+  <p style="max-width:720px;margin:0 auto 24px;text-align:center;font-size:12.5px;color:var(--muted);line-height:1.6;background:var(--bg-alt);border-radius:10px;padding:14px 18px;">
+    본 서비스는 매물 정보를 게시하는 플랫폼이며, 실제 거래·중개는 당사자 간 직접 진행합니다. IP바다는 거래를 중개하거나 대리하지 않습니다.
+  </p>
+
+  <div class="filter-bar" id="listing-type-filter">
+    <button type="button" class="filter-pill active" data-type="sale">매매</button>
+    <button type="button" class="filter-pill" data-type="license">라이선스</button>
+  </div>
+
+  <div style="max-width:1180px;margin:0 auto 8px;text-align:right;">
+    <button type="button" class="btn btn-dark" id="open-listing-form" style="display:none;">+ 매물 등록</button>
+  </div>
+
+  <div class="resource-grid" id="listing-grid">
+    <p class="resource-empty">불러오는 중입니다...</p>
+  </div>
+</section>
+
+<!-- 매물 등록 모달 -->
+<div class="modal-overlay" id="listing-modal">
+  <div class="modal-box" style="max-width:520px;">
+    <button class="modal-close" id="listing-modal-close" type="button" aria-label="닫기">✕</button>
+    <h3 style="font-size:17px;margin-bottom:18px;">매물 등록</h3>
+
+    <div id="prefill-wrap" style="display:none;margin-bottom:14px;">
+      <label style="display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px;">내 특허 목록에서 가져오기</label>
+      <select id="prefill-select" style="width:100%;border:1px solid var(--border);border-radius:9px;padding:11px 14px;font-size:14px;font-family:inherit;">
+        <option value="">직접 입력</option>
+      </select>
+    </div>
+
+    <form id="listing-form" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;gap:16px;font-size:14px;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="radio" name="listing_type" value="sale" checked> 매매</label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="radio" name="listing_type" value="license"> 라이선스</label>
+      </div>
+      <input type="text" name="title" id="listing-title" placeholder="제목" required style="border:1px solid var(--border);border-radius:9px;padding:11px 14px;font-size:14px;font-family:inherit;">
+      <input type="text" name="patent_number" id="listing-patent-number" placeholder="특허번호 (선택)" style="border:1px solid var(--border);border-radius:9px;padding:11px 14px;font-size:14px;font-family:inherit;">
+      <input type="text" name="industry_tags" id="listing-industry-tags" placeholder="기술분야 (쉼표로 구분, 예: IoT, 헬스케어)" style="border:1px solid var(--border);border-radius:9px;padding:11px 14px;font-size:14px;font-family:inherit;">
+      <textarea name="description" id="listing-description" placeholder="상세 설명" required style="border:1px solid var(--border);border-radius:9px;padding:13px 14px;font-size:14px;font-family:inherit;min-height:110px;resize:vertical;"></textarea>
+      <p style="font-size:12px;color:var(--muted);">등록하신 매물은 관리자 검수 후 목록에 공개됩니다.</p>
+      <button type="submit" class="btn btn-primary">등록 신청</button>
+      <p class="form-msg" id="listing-form-msg"></p>
+    </form>
+  </div>
+</div>
+
+<div id="site-footer-root" data-disclaimer="본 서비스는 매물 정보를 게시하는 플랫폼이며, 실제 거래·중개는 당사자 간 직접 진행합니다. IP바다는 거래를 중개하거나 대리하지 않습니다."></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="app.js"></script>
+<script>
+  /* ---- 특허기술거래·기술이전라이선스: 탭 필터 + 목록 + 등록(프리필 포함) ---- */
+  var currentListingType = 'sale';
+  var allListings = [];
+
+  var STATUS_LABEL = { pending_review: '검수 대기', active: '진행중', negotiating: '협의중', completed: '거래완료', withdrawn: '철회됨' };
+
+  function renderListingGrid(){
+    var grid = document.getElementById('listing-grid');
+    var filtered = allListings.filter(function(l){ return l.listing_type === currentListingType; });
+    if(filtered.length === 0){
+      grid.innerHTML = '<p class="resource-empty">등록된 매물이 없습니다.</p>';
+      return;
+    }
+    grid.innerHTML = filtered.map(function(l){
+      var tags = (l.industry_tags || []).map(function(t){ return '<span class="resource-badge">' + escapeHtml(t) + '</span>'; }).join('');
+      return '' +
+        '<div class="resource-card">' +
+          '<div class="badges">' + tags + '<span class="resource-badge stage">' + (STATUS_LABEL[l.status] || l.status) + '</span></div>' +
+          '<h4>' + escapeHtml(l.title) + '</h4>' +
+          '<p>' + escapeHtml((l.description || '').slice(0, 80)) + ((l.description || '').length > 80 ? '…' : '') + '</p>' +
+          '<span class="dl" style="font-size:12px;color:var(--muted);">등록일: ' + paFormatDate(l.created_at) + '</span>' +
+        '</div>';
+    }).join('');
+  }
+
+  async function loadListings(){
+    var grid = document.getElementById('listing-grid');
+    if(!supabaseClient){ grid.innerHTML = '<p class="resource-empty">서비스에 연결할 수 없습니다.</p>'; return; }
+    var result = await supabaseClient.from('tech_listings')
+      .select('*')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+    if(result.error){
+      grid.innerHTML = '<p class="resource-empty">매물을 불러오지 못했습니다: ' + escapeHtml(result.error.message) + '</p>';
+      return;
+    }
+    allListings = result.data || [];
+    renderListingGrid();
+  }
+
+  document.querySelectorAll('#listing-type-filter .filter-pill').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#listing-type-filter .filter-pill').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentListingType = btn.dataset.type;
+      renderListingGrid();
+    });
+  });
+
+  /* ---- 등록 모달 ---- */
+  function openListingModal(){ document.getElementById('listing-modal').classList.add('open'); }
+  function closeListingModal(){ document.getElementById('listing-modal').classList.remove('open'); }
+
+  document.getElementById('open-listing-form').addEventListener('click', openListingModal);
+  document.getElementById('listing-modal-close').addEventListener('click', closeListingModal);
+  document.getElementById('listing-modal').addEventListener('click', function(e){
+    if(e.target === document.getElementById('listing-modal')) closeListingModal();
+  });
+
+  // "내 특허 목록에서 가져오기": AI명세서작성으로 만든 patent_projects 중 제목이 있는
+  // 건만 후보로 보여준다. 선택하면 제목/기술분야를 폼에 채워준다 (특허번호는 아직
+  // 출원 전 초안 단계라 채울 값이 없어 비워둔다).
+  var myPatentProjects = [];
+  async function loadPrefillOptions(session){
+    var wrap = document.getElementById('prefill-wrap');
+    var select = document.getElementById('prefill-select');
+    if(!supabaseClient) return;
+    var result = await supabaseClient.from('patent_projects')
+      .select('id, title_ko, tech_field')
+      .eq('client_id', session.user.id)
+      .not('title_ko', 'is', null);
+    if(result.error || !result.data || result.data.length === 0) return;
+    myPatentProjects = result.data;
+    select.innerHTML = '<option value="">직접 입력</option>' + myPatentProjects.map(function(p){
+      return '<option value="' + p.id + '">' + escapeHtml(p.title_ko) + '</option>';
+    }).join('');
+    wrap.style.display = 'block';
+  }
+
+  document.getElementById('prefill-select').addEventListener('change', function(e){
+    var project = myPatentProjects.find(function(p){ return p.id === e.target.value; });
+    if(!project) return;
+    document.getElementById('listing-title').value = project.title_ko || '';
+    document.getElementById('listing-industry-tags').value = project.tech_field || '';
+  });
+
+  document.getElementById('listing-form').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var msg = document.getElementById('listing-form-msg');
+    if(!supabaseClient || !currentSession){ msg.textContent = '로그인이 필요합니다.'; msg.className = 'form-msg error'; return; }
+    var form = e.target;
+    var tags = form.industry_tags.value.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
+    var submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    msg.textContent = '등록 중...'; msg.className = 'form-msg';
+    var result = await supabaseClient.from('tech_listings').insert({
+      user_id: currentSession.user.id,
+      listing_type: form.listing_type.value,
+      title: form.title.value.trim(),
+      patent_number: form.patent_number.value.trim() || null,
+      description: form.description.value.trim(),
+      industry_tags: tags
+    });
+    submitBtn.disabled = false;
+    if(result.error){
+      msg.textContent = '등록에 실패했습니다: ' + result.error.message;
+      msg.className = 'form-msg error';
+      return;
+    }
+    msg.textContent = '등록 신청이 접수되었습니다. 관리자 검수 후 목록에 공개됩니다.';
+    msg.className = 'form-msg success';
+    form.reset();
+    setTimeout(function(){ closeListingModal(); msg.textContent = ''; }, 1800);
+  });
+
+  function refreshListingAuthUI(){
+    var isLoggedIn = !!currentSession;
+    document.getElementById('open-listing-form').style.display = isLoggedIn ? 'inline-block' : 'none';
+    if(isLoggedIn) loadPrefillOptions(currentSession);
+  }
+
+  loadListings();
+
+  if(supabaseClient){
+    supabaseClient.auth.onAuthStateChange(function(){ refreshListingAuthUI(); });
+    supabaseClient.auth.getSession().then(function(){ refreshListingAuthUI(); });
+  }
+</script>
+
+</body>
+</html>
