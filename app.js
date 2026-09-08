@@ -35,9 +35,9 @@ var SITE_NAV = [
     cardHref: 'resources.html'
   },
   {
-    label: '특허출원', navHref: 'index.html#filing', cardId: 'filing',
+    label: '특허출원', navHref: 'filing.html',
     icon: '🧠', desc: 'AI 명세서 초안 생성, 선행기술 검색, 출원 진행 관리, PCT·해외출원 가이드까지 지원합니다.',
-    cardHref: '#filing-detail',
+    cardHref: 'filing.html',
     children: [
       { label: '선행기술조사', href: 'prior-art.html' },
       { label: 'AI명세서 작성', href: 'spec-writer.html' }
@@ -58,9 +58,9 @@ var SITE_NAV = [
     ]
   },
   {
-    label: 'IP마켓', navHref: 'index.html#market-detail', cardId: 'market',
+    label: 'IP마켓', navHref: 'market.html',
     icon: '💹', desc: '특허 거래, 기술이전·라이선스 중개, IP 가치평가까지 — IP를 자산으로 연결합니다.',
-    cardHref: '#market-detail'
+    cardHref: 'market.html'
   },
   {
     label: '커뮤니티', navHref: 'community.html', cardId: 'community',
