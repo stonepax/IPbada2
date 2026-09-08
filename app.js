@@ -63,8 +63,12 @@ var SITE_NAV = [
   },
   {
     label: 'IP마켓', navHref: 'market.html',
-    icon: '💹', desc: '특허 거래, 기술이전·라이선스 중개, IP 가치평가까지 — IP를 자산으로 연결합니다.',
-    cardHref: 'market.html'
+    icon: '💹', desc: '특허거래·기술이전라이선스 매물을 등록·검색하고, IP 가치평가까지 — IP를 자산으로 연결합니다.',
+    cardHref: 'market.html',
+    children: [
+      { label: '특허기술거래·기술이전라이선스', href: 'tech-listings.html' },
+      { label: 'IP 가치평가', href: 'market.html' }
+    ]
   },
   {
     label: '커뮤니티', navHref: 'community.html', cardId: 'community',
