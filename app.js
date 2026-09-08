@@ -24,22 +24,117 @@ function bindHamburger(){
     nav.style.gap = '16px';
   });
 }
-/* ---- Make whole service cards clickable, not just the "자세히 보기" link ---- */
-document.querySelectorAll('.card').forEach(function(card){
-  var link = card.querySelector('.card-link');
-  if(!link) return;
-  card.style.cursor = 'pointer';
-  card.addEventListener('click', function(e){
-    if(e.target.closest('a')) return;
-    var href = link.getAttribute('href');
-    if(href.charAt(0) === '#'){
-      var target = document.querySelector(href);
-      if(target) target.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      window.location.href = href;
+/* ---- 사이트 전체 메뉴 구조: 상단 헤더 nav와 index.html의 SERVICES 카드 그리드가
+   이 배열 하나를 공유해서 각자의 형태(간단한 링크 vs 아이콘+설명 카드)로 그린다.
+   메뉴 항목을 추가/변경할 때 여기 한 곳만 고치면 두 위치 모두에 반영된다 --
+   예전엔 header.html과 index.html이 서로 다른 하드코딩본이라 자꾸 어긋났다. ---- */
+var SITE_NAV = [
+  {
+    label: 'IP자료실', navHref: 'resources.html',
+    icon: '📚', desc: '판례·심결례 DB, 법령·고시, 서식·양식, 뉴스레터까지 — 변리사·기업 특허팀이 매일 찾는 콘텐츠 허브입니다.',
+    cardHref: 'resources.html'
+  },
+  {
+    label: '특허출원', navHref: 'index.html#filing', cardId: 'filing',
+    icon: '🧠', desc: 'AI 명세서 초안 생성, 선행기술 검색, 출원 진행 관리, PCT·해외출원 가이드까지 지원합니다.',
+    cardHref: '#filing-detail',
+    children: [
+      { label: '선행기술조사', href: 'prior-art.html' },
+      { label: 'AI명세서 작성', href: 'spec-writer.html' }
+    ]
+  },
+  {
+    label: '심판·소송', navHref: 'trial.html', cardId: 'trial',
+    icon: '⚖️', desc: '무효심판 분석, 침해 경고장 대응, 심판 진행 추적, 전문가 연결로 분쟁에 든든하게 대응합니다.',
+    cardHref: 'trial.html'
+  },
+  {
+    label: '인사이트', navHref: 'insights.html', cardId: 'insights',
+    icon: '💡', desc: '블로그 칼럼과 글로벌 IP 뉴스로 놓치기 쉬운 IP 트렌드를 큐레이션해 전해드립니다.',
+    cardHref: 'insights.html',
+    children: [
+      { label: '블로그', href: 'blog.html' },
+      { label: '글로벌 IP뉴스', href: 'news.html' }
+    ]
+  },
+  {
+    label: 'IP마켓', navHref: 'index.html#market-detail', cardId: 'market',
+    icon: '💹', desc: '특허 거래, 기술이전·라이선스 중개, IP 가치평가까지 — IP를 자산으로 연결합니다.',
+    cardHref: '#market-detail'
+  },
+  {
+    label: '커뮤니티', navHref: 'community.html', cardId: 'community',
+    icon: '💬', desc: 'Q&amp;A, 칼럼·기고, 세미나·교육, 뉴스·트렌드 — 변리사와 기업, 스타트업이 함께 교류합니다.',
+    cardHref: 'community.html',
+    children: [
+      { label: 'IP Q&amp;A', href: 'community.html' },
+      { label: '구인구직', href: 'jobs.html' }
+    ]
+  }
+];
+
+function renderNavHTML(){
+  return SITE_NAV.map(function(item){
+    if(!item.children){
+      return '<a href="' + item.navHref + '">' + item.label + '</a>';
     }
+    var childrenHTML = item.children.map(function(c){
+      return '<a href="' + c.href + '">' + c.label + '</a>';
+    }).join('');
+    return '' +
+      '<div class="nav-item">' +
+        '<a href="' + item.navHref + '">' + item.label + '</a>' +
+        '<button type="button" class="dropdown-toggle" aria-expanded="false" aria-haspopup="true" aria-label="' + item.label + ' 하위 메뉴 열기/닫기">▾</button>' +
+        '<div class="dropdown-menu"><div class="dropdown-menu-inner">' + childrenHTML + '</div></div>' +
+      '</div>';
+  }).join('');
+}
+
+function renderServicesCardsHTML(){
+  return SITE_NAV.map(function(item){
+    var idAttr = item.cardId ? ' id="' + item.cardId + '"' : '';
+    return '' +
+      '<div class="card"' + idAttr + '>' +
+        '<div class="icon-box">' + item.icon + '</div>' +
+        '<h3>' + item.label + '</h3>' +
+        '<p>' + item.desc + '</p>' +
+        '<a class="card-link" href="' + item.cardHref + '">자세히 보기 →</a>' +
+      '</div>';
+  }).join('');
+}
+
+// index.html의 SERVICES 카드 그리드를 위 SITE_NAV에서 렌더링한다. 다른 페이지에는
+// #services-cards 컨테이너가 없으므로 조용히 아무 일도 하지 않는다.
+function renderServicesCards(){
+  var grid = document.getElementById('services-cards');
+  if(!grid) return;
+  grid.innerHTML = renderServicesCardsHTML();
+  bindCardClicks();
+}
+renderServicesCards();
+
+/* ---- Make whole service cards clickable, not just the "자세히 보기" link ----
+   SERVICES 그리드처럼 나중에 동적으로 생성되는 카드에도 다시 호출해서 바인딩할 수
+   있도록 함수로 뽑아뒀다. dataset 플래그로 중복 바인딩은 막는다. ---- */
+function bindCardClicks(){
+  document.querySelectorAll('.card').forEach(function(card){
+    var link = card.querySelector('.card-link');
+    if(!link || card.dataset.clickBound) return;
+    card.dataset.clickBound = '1';
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', function(e){
+      if(e.target.closest('a')) return;
+      var href = link.getAttribute('href');
+      if(href.charAt(0) === '#'){
+        var target = document.querySelector(href);
+        if(target) target.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.location.href = href;
+      }
+    });
   });
-});
+}
+bindCardClicks();
 
 /* ---- Auth modal open/close/tabs (함수 정의만; 실제 바인딩은 헤더 삽입 후 initHeaderUI에서) ---- */
 var authModal = null;
@@ -156,6 +251,13 @@ if(supabaseClient){
    엘리먼트가 아직 DOM에 없어 조용히 실패한다. ---- */
 function initHeaderUI(){
   authModal = document.getElementById('auth-modal');
+
+  // header.html 자체에 들어있는 nav 마크업은 fetch 실패 등 극단적인 경우를 위한
+  // 정적 fallback일 뿐이다. 정상적으로 여기까지 왔다면 항상 SITE_NAV로 다시 그려
+  // index.html의 SERVICES 카드 그리드와 같은 데이터를 쓰도록 강제한다.
+  var navEl = document.querySelector('.main-nav');
+  if(navEl) navEl.innerHTML = renderNavHTML();
+
   bindHamburger();
 
   // Nav dropdown (예: 인사이트): 데스크톱은 CSS hover/focus-within으로 열리고,

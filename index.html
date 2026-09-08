@@ -38,44 +38,9 @@
     <p>자료 탐색부터 출원, 분쟁 대응, 인사이트, 거래, 커뮤니티까지 한 곳에서 연결됩니다.</p>
   </div>
 
-  <div class="card-grid">
-    <div class="card">
-      <div class="icon-box">📚</div>
-      <h3>IP자료실</h3>
-      <p>판례·심결례 DB, 법령·고시, 서식·양식, 뉴스레터까지 — 변리사·기업 특허팀이 매일 찾는 콘텐츠 허브입니다.</p>
-      <a class="card-link" href="resources.html">자세히 보기 →</a>
-    </div>
-    <div class="card" id="filing">
-      <div class="icon-box">🧠</div>
-      <h3>특허출원</h3>
-      <p>AI 명세서 초안 생성, 선행기술 검색, 출원 진행 관리, PCT·해외출원 가이드까지 지원합니다.</p>
-      <a class="card-link" href="#filing-detail">자세히 보기 →</a>
-    </div>
-    <div class="card" id="trial">
-      <div class="icon-box">⚖️</div>
-      <h3>심판·소송</h3>
-      <p>무효심판 분석, 침해 경고장 대응, 심판 진행 추적, 전문가 연결로 분쟁에 든든하게 대응합니다.</p>
-      <a class="card-link" href="trial.html">자세히 보기 →</a>
-    </div>
-    <div class="card" id="insights">
-      <div class="icon-box">💡</div>
-      <h3>인사이트</h3>
-      <p>블로그 칼럼과 글로벌 IP 뉴스로 놓치기 쉬운 IP 트렌드를 큐레이션해 전해드립니다.</p>
-      <a class="card-link" href="insights.html">자세히 보기 →</a>
-    </div>
-    <div class="card" id="market">
-      <div class="icon-box">💹</div>
-      <h3>IP마켓</h3>
-      <p>특허 거래, 기술이전·라이선스 중개, IP 가치평가까지 — IP를 자산으로 연결합니다.</p>
-      <a class="card-link" href="#market-detail">자세히 보기 →</a>
-    </div>
-    <div class="card" id="community">
-      <div class="icon-box">💬</div>
-      <h3>커뮤니티</h3>
-      <p>Q&amp;A, 칼럼·기고, 세미나·교육, 뉴스·트렌드 — 변리사와 기업, 스타트업이 함께 교류합니다.</p>
-      <a class="card-link" href="community.html">자세히 보기 →</a>
-    </div>
-  </div>
+  <!-- 카드 6개는 app.js의 SITE_NAV(상단 헤더 nav와 같은 데이터)에서 렌더링된다
+       (renderServicesCards). 여기 하드코딩하지 말 것. -->
+  <div class="card-grid" id="services-cards"></div>
 </section>
 
 <!-- 특허출원 상세 (선행기술조사 / AI명세서 작성) -->
