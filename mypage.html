@@ -46,6 +46,12 @@
 
       <div id="trial-tracking-list" class="mypage-credit-list"></div>
     </div>
+
+    <div class="mypage-panel" id="listing-inquiries">
+      <h3 style="font-size:17px;margin-bottom:8px;">받은 문의</h3>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px;">내가 등록한 <a href="tech-listings.html" style="color:var(--blue);font-weight:700;">특허기술거래·기술이전라이선스</a> 매물에 도착한 문의입니다. 문의자의 연락처는 표시되지 않으니, 관심 있으시면 알림 이메일에 있는 연락처로 직접 연락해주세요.</p>
+      <div id="listing-inquiries-list" class="mypage-credit-list"></div>
+    </div>
   </div>
 </section>
 
@@ -66,6 +72,7 @@
     if(isLoggedIn){
       renderMypageCredits(currentSession);
       renderTrialTrackingList(currentSession);
+      renderListingInquiries(currentSession);
     }
   }
 
@@ -179,6 +186,40 @@
     }
     renderTrialTrackingList(currentSession);
   });
+
+  /* ---- 받은 문의 ----
+     listing_inquiries에 대한 select RLS는 "본인이 보낸 문의"와 "내 매물에 달린 문의"
+     둘 다 허용하므로, 필터 없이 조회하면 둘이 섞여 온다. 여기서는 등록자 시점의
+     "받은 문의"만 보여줘야 하므로 tech_listings.user_id가 본인인 것만 클라이언트에서
+     걸러낸다. 문의자 이메일은 이 목록에 포함하지 않는다(개인정보 비노출 -- 등록자는
+     알림 이메일 본문으로만 문의자 이메일을 알 수 있다). ---- */
+  async function renderListingInquiries(session){
+    var wrap = document.getElementById('listing-inquiries-list');
+    if(!supabaseClient) return;
+    var result = await supabaseClient.from('listing_inquiries')
+      .select('id, message, created_at, tech_listings(id, title, user_id)')
+      .order('created_at', { ascending: false });
+    if(result.error || !result.data){
+      wrap.innerHTML = '<p style="color:var(--muted);font-size:14px;">문의 목록을 불러오지 못했습니다.</p>';
+      return;
+    }
+    var received = result.data.filter(function(r){ return r.tech_listings && r.tech_listings.user_id === session.user.id; });
+    if(received.length === 0){
+      wrap.innerHTML = '<p style="color:var(--muted);font-size:14px;">받은 문의가 없습니다.</p>';
+      return;
+    }
+    wrap.innerHTML = received.map(function(r){
+      return '' +
+        '<div class="trial-row">' +
+          '<div class="info">' +
+            '<div><span class="number">' + escapeHtml(r.tech_listings.title) + '</span></div>' +
+            '<div class="status">' + escapeHtml(r.message) + '</div>' +
+            '<div class="checked-at">' + paFormatDate(r.created_at) + '</div>' +
+          '</div>' +
+          '<a class="btn btn-ghost" href="tech-listings.html?listing=' + r.tech_listings.id + '" style="flex:none;padding:8px 14px;font-size:12.5px;">매물 보기</a>' +
+        '</div>';
+    }).join('');
+  }
 
   if(supabaseClient){
     supabaseClient.auth.onAuthStateChange(function(){ renderMypageGate(); });
