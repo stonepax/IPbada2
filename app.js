@@ -46,7 +46,11 @@ var SITE_NAV = [
   {
     label: '심판·소송', navHref: 'trial.html', cardId: 'trial',
     icon: '⚖️', desc: '무효심판 분석, 침해 경고장 대응, 심판 진행 추적, 전문가 연결로 분쟁에 든든하게 대응합니다.',
-    cardHref: 'trial.html'
+    cardHref: 'trial.html',
+    children: [
+      { label: '판례·심결례 검색', href: 'trial.html' },
+      { label: '심판 진행 추적', href: 'mypage.html#trial-tracking' }
+    ]
   },
   {
     label: '인사이트', navHref: 'insights.html', cardId: 'insights',
