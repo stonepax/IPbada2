@@ -71,7 +71,7 @@ var SITE_NAV = [
     icon: '💬', desc: 'Q&amp;A, 칼럼·기고, 세미나·교육, 뉴스·트렌드 — 변리사와 기업, 스타트업이 함께 교류합니다.',
     cardHref: 'community.html',
     children: [
-      { label: 'IP Q&amp;A', href: 'community.html' },
+      { label: 'IP Q&amp;A', href: 'qna.html' },
       { label: '구인구직', href: 'jobs.html' }
     ]
   }
