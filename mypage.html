@@ -73,7 +73,20 @@
       renderMypageCredits(currentSession);
       renderTrialTrackingList(currentSession);
       renderListingInquiries(currentSession);
+      prefillTrialNumberFromQuery();
     }
+  }
+
+  // 홈페이지 "심판 진행 추적" 스포트라이트(index.html?trial=...#trial-tracking)로
+  // 들어온 경우, 입력했던 심판번호를 등록 폼에 채우고 그 섹션으로 스크롤해준다.
+  var trialQueryPrefilled = false;
+  function prefillTrialNumberFromQuery(){
+    if(trialQueryPrefilled) return;
+    var trialNumber = new URLSearchParams(window.location.search).get('trial');
+    if(!trialNumber) return;
+    trialQueryPrefilled = true;
+    document.getElementById('trial-number-input').value = trialNumber;
+    document.getElementById('trial-tracking').scrollIntoView({ block: 'start' });
   }
 
   function mypageCreditRow(label, entry){

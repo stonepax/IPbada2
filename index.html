@@ -94,9 +94,10 @@
       <h3>심판 진행 추적</h3>
       <p>심판번호만 입력하면 실시간 진행상황과 예상 심결일을 알려드립니다.</p>
       <div class="track-input">
-        <input type="text" placeholder="심판번호를 입력하세요 (예: 2026당1234)">
-        <button class="btn btn-primary">조회하기</button>
+        <input type="text" id="trial-tracker-input" placeholder="심판번호를 입력하세요 (예: 2026당1234)">
+        <button type="button" class="btn btn-primary" id="trial-tracker-btn">조회하기</button>
       </div>
+      <p class="form-msg" id="trial-tracker-msg" style="text-align:left;color:#c3d1ea;"></p>
     </div>
     <ul class="progress-steps">
       <li class="done"><span class="dot"></span>심판청구</li>
@@ -237,6 +238,29 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="app.js"></script>
 <script>
+  /* ---- 심판 진행 추적 스포트라이트: 실제 등록/조회는 로그인 후 마이페이지에서
+     이뤄지므로, 여기서는 입력값을 들고 mypage.html#trial-tracking으로 보내
+     그대로 등록 폼에 채워준다. 로그인 전이면 먼저 로그인 모달을 띄운다. ---- */
+  (function setupTrialTrackerSpotlight(){
+    var btn = document.getElementById('trial-tracker-btn');
+    var input = document.getElementById('trial-tracker-input');
+    var msg = document.getElementById('trial-tracker-msg');
+    if(!btn || !input) return;
+    btn.addEventListener('click', function(){
+      var trialNumber = input.value.trim();
+      if(!trialNumber){
+        msg.textContent = '심판번호를 입력해주세요.';
+        return;
+      }
+      if(!currentSession){
+        msg.textContent = '로그인 후 이용할 수 있습니다.';
+        openAuthModal('login');
+        return;
+      }
+      window.location.href = 'mypage.html?trial=' + encodeURIComponent(trialNumber) + '#trial-tracking';
+    });
+  })();
+
   /* ---- Contact form -> Supabase table "inquiries" ---- */
   var contactForm = document.getElementById('contact-form');
 
